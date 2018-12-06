@@ -86,10 +86,198 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js":
-/*!************************************************************************************************!*\
-  !*** /Users/anikolov/Desktop/Projects/node_modules/@babel/runtime/helpers/asyncToGenerator.js ***!
-  \************************************************************************************************/
+/***/ "./js/interface.js":
+/*!*************************!*\
+  !*** ./js/interface.js ***!
+  \*************************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ "./node_modules/@babel/runtime/helpers/asyncToGenerator.js");
+/* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__);
+
+
+Fliplet().then(function () {
+  $('.spinner-holder').removeClass('animated');
+  var button = $('.add-audio');
+  var widgetInstanceId = Fliplet.Widget.getDefaultId();
+  var widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
+  var media = $.extend(widgetInstanceData.media, {
+    selectedFiles: {},
+    selectFiles: [],
+    // To use the restore on File Picker
+    selectMultiple: false,
+    type: 'audio'
+  });
+  var providerInstance;
+  var config = media;
+
+  if (media && media.id) {
+    config.selectFiles.push({
+      appId: media.appId ? media.appId : undefined,
+      organizationId: media.organizationId ? media.organizationId : undefined,
+      mediaFolderId: media.mediaFolderId ? media.mediaFolderId : undefined,
+      parentId: media.parentId ? media.parentId : undefined,
+      contentType: media.contentType ? media.contentType : undefined,
+      id: media.id ? media.id : undefined
+    });
+  } // private methods
+
+
+  var browseClickHandler =
+  /*#__PURE__*/
+  function () {
+    var _ref = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
+    /*#__PURE__*/
+    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee(event) {
+      var providerData;
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              event.preventDefault();
+
+              if (providerInstance) {
+                _context.next = 17;
+                break;
+              }
+
+              $('.spinner-holder').addClass('animated');
+              providerInstance = Fliplet.Widget.open('com.fliplet.file-picker', {
+                data: config,
+                onEvent: function onEvent(e, data) {
+                  switch (e) {
+                    case 'widget-rendered':
+                      $('.spinner-holder').removeClass('animated');
+                      break;
+
+                    case 'widget-set-info':
+                      {
+                        var msg = data.length ? 'Audio file selected' : 'no selected audio file';
+                        Fliplet.Widget.toggleSaveButton(!!data.length);
+                        Fliplet.Widget.info(msg);
+                        break;
+                      }
+
+                    default:
+                      break;
+                  }
+                }
+              });
+              _context.next = 6;
+              return providerInstance;
+
+            case 6:
+              providerData = _context.sent;
+              Fliplet.Studio.emit('widget-save-label-update', {
+                text: 'Save & Close'
+              });
+              Fliplet.Widget.info('');
+              Fliplet.Widget.toggleCancelButton(true);
+              Fliplet.Widget.toggleSaveButton(true);
+              media.selectedFiles = providerData.data.length === 1 ? providerData.data[0] : providerData.data;
+              providerInstance = null;
+              $('.audio .add-audio').text('Replace audio');
+              $('.audio .info-holder').removeClass('hidden');
+              $('.audio .file-title span').text(media.selectedFiles.name);
+              Fliplet.Widget.autosize();
+
+            case 17:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee, this);
+    }));
+
+    return function browseClickHandler(_x) {
+      return _ref.apply(this, arguments);
+    };
+  }();
+
+  var save =
+  /*#__PURE__*/
+  function () {
+    var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
+    /*#__PURE__*/
+    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
+      var data;
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              data = {};
+
+              if (data.url && !data.url.match(/^[A-z]+:/i)) {
+                data.url = "http://".concat(data.url);
+              }
+
+              if (media.toRemove) {
+                data.media = {};
+              } else {
+                data.media = _.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
+              }
+
+              data.media.path = null;
+              _context2.next = 6;
+              return Fliplet.Widget.save(data);
+
+            case 6:
+              Fliplet.Widget.complete();
+
+            case 7:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2, this);
+    }));
+
+    return function save() {
+      return _ref2.apply(this, arguments);
+    };
+  }();
+
+  button.click(browseClickHandler);
+  $('.audio-remove').on('click', function () {
+    media.selectFiles = [];
+    media.toRemove = true;
+    $('.audio .add-audio').text('Browse your media library');
+    $('.audio .info-holder').addClass('hidden');
+    $('.audio .file-title span').text('');
+    Fliplet.Widget.autosize();
+  });
+  Fliplet.Widget.onSaveRequest(function () {
+    if (providerInstance) {
+      return providerInstance.forwardSaveRequest();
+    }
+
+    save();
+  });
+  Fliplet.Widget.onCancelRequest(function () {
+    if (providerInstance) {
+      providerInstance.close();
+      providerInstance = null;
+      Fliplet.Studio.emit('widget-save-label-update', {
+        text: 'Save & Close'
+      });
+      Fliplet.Widget.toggleCancelButton(true);
+      Fliplet.Widget.toggleSaveButton(true);
+      Fliplet.Widget.info('');
+    }
+  });
+});
+
+/***/ }),
+
+/***/ "./node_modules/@babel/runtime/helpers/asyncToGenerator.js":
+/*!*****************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/asyncToGenerator.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -133,22 +321,22 @@ module.exports = _asyncToGenerator;
 
 /***/ }),
 
-/***/ "../../../node_modules/@babel/runtime/regenerator/index.js":
-/*!*****************************************************************************************!*\
-  !*** /Users/anikolov/Desktop/Projects/node_modules/@babel/runtime/regenerator/index.js ***!
-  \*****************************************************************************************/
+/***/ "./node_modules/@babel/runtime/regenerator/index.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@babel/runtime/regenerator/index.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! regenerator-runtime */ "../../../node_modules/regenerator-runtime/runtime-module.js");
+module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/regenerator-runtime/runtime-module.js");
 
 
 /***/ }),
 
-/***/ "../../../node_modules/regenerator-runtime/runtime-module.js":
-/*!*******************************************************************************************!*\
-  !*** /Users/anikolov/Desktop/Projects/node_modules/regenerator-runtime/runtime-module.js ***!
-  \*******************************************************************************************/
+/***/ "./node_modules/regenerator-runtime/runtime-module.js":
+/*!************************************************************!*\
+  !*** ./node_modules/regenerator-runtime/runtime-module.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -176,7 +364,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(/*! ./runtime */ "../../../node_modules/regenerator-runtime/runtime.js");
+module.exports = __webpack_require__(/*! ./runtime */ "./node_modules/regenerator-runtime/runtime.js");
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -193,10 +381,10 @@ if (hadRuntime) {
 
 /***/ }),
 
-/***/ "../../../node_modules/regenerator-runtime/runtime.js":
-/*!************************************************************************************!*\
-  !*** /Users/anikolov/Desktop/Projects/node_modules/regenerator-runtime/runtime.js ***!
-  \************************************************************************************/
+/***/ "./node_modules/regenerator-runtime/runtime.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/regenerator-runtime/runtime.js ***!
+  \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -922,210 +1110,6 @@ if (hadRuntime) {
   })() || Function("return this")()
 );
 
-
-/***/ }),
-
-/***/ "./js/interface.js":
-/*!*************************!*\
-  !*** ./js/interface.js ***!
-  \*************************/
-/*! no exports provided */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "../../../node_modules/@babel/runtime/regenerator/index.js");
-/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ "../../../node_modules/@babel/runtime/helpers/asyncToGenerator.js");
-/* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__);
-
-
-
-_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
-/*#__PURE__*/
-_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee3() {
-  var button, widgetInstanceId, widgetInstanceData, media, providerInstance, config, browseClickHandler, save;
-  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee3$(_context3) {
-    while (1) {
-      switch (_context3.prev = _context3.next) {
-        case 0:
-          _context3.next = 2;
-          return Fliplet();
-
-        case 2:
-          $('.spinner-holder').removeClass('animated');
-          button = $('.add-audio');
-          widgetInstanceId = Fliplet.Widget.getDefaultId();
-          widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
-          media = $.extend(widgetInstanceData.media, {
-            selectedFiles: {},
-            selectFiles: [],
-            // To use the restore on File Picker
-            selectMultiple: false,
-            type: 'audio'
-          });
-          config = media;
-
-          if (media && media.id) {
-            config.selectFiles.push({
-              appId: media.appId ? media.appId : undefined,
-              organizationId: media.organizationId ? media.organizationId : undefined,
-              mediaFolderId: media.mediaFolderId ? media.mediaFolderId : undefined,
-              parentId: media.parentId ? media.parentId : undefined,
-              contentType: media.contentType ? media.contentType : undefined,
-              id: media.id ? media.id : undefined
-            });
-          } /// private methods
-
-
-          browseClickHandler =
-          /*#__PURE__*/
-          function () {
-            var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
-            /*#__PURE__*/
-            _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee(e) {
-              var providerData;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
-                while (1) {
-                  switch (_context.prev = _context.next) {
-                    case 0:
-                      e.preventDefault();
-
-                      if (providerInstance) {
-                        _context.next = 17;
-                        break;
-                      }
-
-                      $('.spinner-holder').addClass('animated');
-                      providerInstance = Fliplet.Widget.open('com.fliplet.file-picker', {
-                        data: config,
-                        onEvent: function onEvent(e, data) {
-                          switch (e) {
-                            case 'widget-rendered':
-                              $('.spinner-holder').removeClass('animated');
-                              break;
-
-                            case 'widget-set-info':
-                              Fliplet.Widget.toggleSaveButton(!!data.length);
-                              var msg = data.length ? 'Audio file selected' : 'no selected audio file';
-                              Fliplet.Widget.info(msg);
-                              break;
-
-                            default:
-                              break;
-                          }
-                        }
-                      });
-                      _context.next = 6;
-                      return providerInstance;
-
-                    case 6:
-                      providerData = _context.sent;
-                      Fliplet.Studio.emit('widget-save-label-update', {
-                        text: 'Save & Close'
-                      });
-                      Fliplet.Widget.info('');
-                      Fliplet.Widget.toggleCancelButton(true);
-                      Fliplet.Widget.toggleSaveButton(true);
-                      media.selectedFiles = providerData.data.length === 1 ? providerData.data[0] : providerData.data;
-                      providerInstance = null;
-                      $('.audio .add-audio').text('Replace audio');
-                      $('.audio .info-holder').removeClass('hidden');
-                      $('.audio .file-title span').text(media.selectedFiles.name);
-                      Fliplet.Widget.autosize();
-
-                    case 17:
-                    case "end":
-                      return _context.stop();
-                  }
-                }
-              }, _callee, this);
-            }));
-
-            return function browseClickHandler(_x) {
-              return _ref2.apply(this, arguments);
-            };
-          }();
-
-          save =
-          /*#__PURE__*/
-          function () {
-            var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
-            /*#__PURE__*/
-            _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
-              var data;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
-                while (1) {
-                  switch (_context2.prev = _context2.next) {
-                    case 0:
-                      data = {};
-
-                      if (data.url && !data.url.match(/^[A-z]+:/i)) {
-                        data.url = 'http://' + data.url;
-                      }
-
-                      if (media.toRemove) {
-                        data.media = {};
-                      } else {
-                        data.media = _.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
-                      }
-
-                      data.media.path = null;
-                      _context2.next = 6;
-                      return Fliplet.Widget.save(data);
-
-                    case 6:
-                      Fliplet.Widget.complete();
-
-                    case 7:
-                    case "end":
-                      return _context2.stop();
-                  }
-                }
-              }, _callee2, this);
-            }));
-
-            return function save() {
-              return _ref3.apply(this, arguments);
-            };
-          }();
-
-          button.click(browseClickHandler);
-          $('.audio-remove').on('click', function () {
-            media.selectFiles = [];
-            media.toRemove = true;
-            $('.audio .add-audio').text('Browse your media library');
-            $('.audio .info-holder').addClass('hidden');
-            $('.audio .file-title span').text('');
-            Fliplet.Widget.autosize();
-          });
-          Fliplet.Widget.onSaveRequest(function () {
-            if (providerInstance) {
-              return providerInstance.forwardSaveRequest();
-            }
-
-            save();
-          });
-          Fliplet.Widget.onCancelRequest(function () {
-            if (providerInstance) {
-              providerInstance.close();
-              providerInstance = null;
-              Fliplet.Studio.emit('widget-save-label-update', {
-                text: 'Save & Close'
-              });
-              Fliplet.Widget.toggleCancelButton(true);
-              Fliplet.Widget.toggleSaveButton(true);
-              Fliplet.Widget.info('');
-            }
-          });
-
-        case 15:
-        case "end":
-          return _context3.stop();
-      }
-    }
-  }, _callee3, this);
-}))();
 
 /***/ }),
 

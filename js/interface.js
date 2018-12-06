@@ -1,6 +1,6 @@
-(async () => {
-  await Fliplet();
+Fliplet().then(() => {
   $('.spinner-holder').removeClass('animated');
+
   const button = $('.add-audio');
   const widgetInstanceId = Fliplet.Widget.getDefaultId();
   const widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
@@ -10,7 +10,6 @@
     selectMultiple: false,
     type: 'audio'
   });
-
   let providerInstance;
   const config = media;
 
@@ -25,30 +24,32 @@
     });
   }
 
-  /// private methods
-  const browseClickHandler = async e => {
-    e.preventDefault();
+  // private methods
+  const browseClickHandler = async (event) => {
+    event.preventDefault();
     if (!providerInstance) {
       $('.spinner-holder').addClass('animated');
       providerInstance = Fliplet.Widget.open('com.fliplet.file-picker', {
         data: config,
-        onEvent: function (e, data) {
+        onEvent(e, data) {
           switch (e) {
             case 'widget-rendered':
               $('.spinner-holder').removeClass('animated');
               break;
-            case 'widget-set-info':
-              Fliplet.Widget.toggleSaveButton(!!data.length);
-              var msg = data.length
+            case 'widget-set-info': {
+              const msg = data.length
                 ? 'Audio file selected'
                 : 'no selected audio file';
+              Fliplet.Widget.toggleSaveButton(!!data.length);
               Fliplet.Widget.info(msg);
               break;
+            }
             default:
               break;
           }
         }
       });
+
       const providerData = await providerInstance;
 
       Fliplet.Studio.emit('widget-save-label-update', {
@@ -71,14 +72,15 @@
     const data = {};
 
     if (data.url && !data.url.match(/^[A-z]+:/i)) {
-      data.url = 'http://' + data.url;
+      data.url = `http://${data.url}`;
     }
-    
+
     if (media.toRemove) {
       data.media = {};
     } else {
       data.media = _.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
     }
+
     data.media.path = null;
     await Fliplet.Widget.save(data);
     Fliplet.Widget.complete();
@@ -114,4 +116,4 @@
       Fliplet.Widget.info('');
     }
   });
-})();
+});

@@ -1,5 +1,5 @@
 Fliplet().then(() => {
-  Fliplet.Widget.instance('fliplet-audio-player', function (data) {
+  Fliplet.Widget.instance('fliplet-audio-player', () => {
     Fliplet.Media.Audio.Player.init();
   });
-})
+});
