@@ -1,0 +1,74 @@
+body {
+  overflow: hidden;
+}
+
+#link-action,
+.form-horizontal {
+  overflow: hidden;
+}
+
+.spinner-holder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner-holder.animated {
+  display: flex !important;
+}
+
+.spinner-holder.animated + .link-wrapper {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.section {
+  margin-top: 15px;
+}
+.form-group .btn-default {
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #e4e9eb;
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  height: 44px;
+  line-height: 44px;
+  padding: 0 15px;
+}
+
+.form-group .btn-default:focus {
+  outline: none;
+}
+
+.form-group .btn-default:active:focus {
+  color: #fff;
+  background-color: #0087a6;
+  border-color: #0087a6;
+}
+
+.file-title {
+  display: inline-block;
+  margin-left: 10px;
+  height: 46px;
+  line-height: 46px;
+}
+
+.info-holder .btn-link {
+  margin-left: 10px;
+}
+
+.info-holder .btn-link.text-danger {
+  color: #e03629 !important;
+}
+
+.info-holder .btn-link.text-danger:active:focus,
+.info-holder .btn-link.text-danger:active:hover,
+.info-holder .btn-link.text-danger:focus,
+.info-holder .btn-link.text-danger:hover {
+  color: #a94442 !important;
+}
