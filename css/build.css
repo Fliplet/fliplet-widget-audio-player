@@ -1,0 +1,18 @@
+
+
+.mode-interact .fl-widget-instance[data-name="Audio Player"] {
+  width: 100%;
+}
+
+.placeholder{
+  width: 100%;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.07);
+  padding: 15px;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  border: 1px solid #dedede;
+  background-color: #efefef;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
