@@ -1,7 +1,7 @@
 Fliplet().then(() => {
   Fliplet.Widget.instance('fliplet-audio-player',
     async (widgetInstanceData) => {
-      if (widgetInstanceData.embedlyData.thumbnail_base64) {
+      if (widgetInstanceData.embedlyData && widgetInstanceData.embedlyData.thumbnailBase64) {
         const audioHolder = $('.audio-holder');
         const startButton = $('.fl-audio-thumb-holder, .audio-placeholder');
         startButton
@@ -17,7 +17,7 @@ Fliplet().then(() => {
                 Fliplet.Navigate.url(widgetInstanceData.embedlyData.url);
                 return;
               }
-              audioHolder.html(widgetInstanceData.embedlyData.audio_html);
+              audioHolder.html(widgetInstanceData.embedlyData.audioHtml);
             } else {
               Fliplet.Analytics.trackEvent({
                 category: 'audio',
@@ -32,7 +32,7 @@ Fliplet().then(() => {
               });
             }
           });
-      } else if (widgetInstanceData.media.url) {
+      } else if (widgetInstanceData.media && widgetInstanceData.media.url) {
         Fliplet.Media.Audio.Player.init();
       }
     });

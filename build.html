@@ -2,14 +2,14 @@
   {{#if media.url}}
     <div data-title="{{media.name}}" data-audio-url="{{media.url}}"></div>
   {{else}}
-    {{#if embedlyData.thumbnail_base64}}
+    {{#if embedlyData.thumbnailBase64}}
     <div class="audio-holder">
       <div class="fl-audio-thumb-holder">
-        <img src="{{embedlyData.thumbnail_base64}}"/>
+        <img src="{{embedlyData.thumbnailBase64}}"/>
       </div>
     </div>
     {{else}}
-      {{#if embedlyData.audio_html}}
+      {{#if embedlyData.audioHtml}}
       <div class="audio-holder">
         <div class="audio-placeholder"></div>
       </div>

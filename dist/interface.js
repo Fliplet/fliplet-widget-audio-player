@@ -103,8 +103,10 @@ __webpack_require__.r(__webpack_exports__);
 
 Fliplet().then(function () {
   $('.spinner-holder').removeClass('animated');
+  var EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
+  var LANDSCAPE_ASPECT_RATIO = 1.555;
   var button = $('.add-audio');
-  var audioUrlInput = $("#audio_url");
+  var audioUrlInput = $('#audio_url');
   var widgetInstanceId = Fliplet.Widget.getDefaultId();
   var widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
   var media = $.extend(widgetInstanceData.media, {
@@ -216,20 +218,21 @@ Fliplet().then(function () {
               data = {};
 
               if (!embedlyData.url) {
-                _context2.next = 8;
+                _context2.next = 9;
                 break;
               }
 
               data.embedlyData = embedlyData;
-              data.media = media = {};
-              _context2.next = 6;
+              data.media = {};
+              media = {};
+              _context2.next = 7;
               return Fliplet.Widget.save(data);
 
-            case 6:
-              _context2.next = 12;
+            case 7:
+              _context2.next = 14;
               break;
 
-            case 8:
+            case 9:
               if (data.url && !data.url.match(/^[A-z]+:/i)) {
                 data.url = "http://".concat(data.url);
               }
@@ -241,20 +244,21 @@ Fliplet().then(function () {
               }
 
               data.media.path = null;
-              data.embedlyData = embedlyData = {};
-
-            case 12:
-              _context2.next = 14;
-              return Fliplet.Widget.save(data);
+              data.embedlyData = {};
+              embedlyData = {};
 
             case 14:
+              _context2.next = 16;
+              return Fliplet.Widget.save(data);
+
+            case 16:
               if (notifyComplete) {
                 Fliplet.Widget.complete();
               } else {
                 Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
               }
 
-            case 15:
+            case 17:
             case "end":
               return _context2.stop();
           }
@@ -319,7 +323,7 @@ Fliplet().then(function () {
       reader.readAsDataURL(xhr.response);
     };
 
-    xhr.open('GET', Fliplet.Env.get('apiUrl') + 'v1/communicate/proxy/' + url);
+    xhr.open('GET', "".concat(Fliplet.Env.get('apiUrl'), "v1/communicate/proxy/").concat(url));
     xhr.setRequestHeader('auth-token', Fliplet.User.getAuthToken());
     xhr.send();
   };
@@ -327,13 +331,13 @@ Fliplet().then(function () {
   var oembed = function oembed(url) {
     var params = {
       url: url,
-      key: "81633801114e4d9f88027be15efb8169",
+      key: EMBEDLY_KEY,
       autoplay: true
     };
-    return $.getJSON('https://api.embedly.com/1/oembed?' + $.param(params));
+    return $.getJSON("https://api.embedly.com/1/oembed?".concat($.param(params)));
   };
 
-  var audioInputHandler = _.throttle(function () {
+  var audioInputHandler = _.throttle(function handler() {
     var url = this.value;
     removeFinalStates();
     $('.audio-states .initial').addClass('hidden');
@@ -357,10 +361,10 @@ Fliplet().then(function () {
         }
 
         var bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
-        embedlyData.orientation = response.width / response.height > 1.555 ? "16by9" : "4by3";
+        embedlyData.orientation = response.width / response.height > LANDSCAPE_ASPECT_RATIO ? '16by9' : '4by3';
         embedlyData.type = response.type;
         embedlyData.url = url;
-        embedlyData.audio_html = bootstrapHtml.replace("{{html}}", response.html).replace("{{orientation}}", embedlyData.orientation).replace("//cdn", "https://cdn");
+        embedlyData.audioHtml = bootstrapHtml.replace('{{html}}', response.html).replace('{{orientation}}', embedlyData.orientation).replace('//cdn', 'https://cdn');
 
         if (response.type === 'link') {
           $('.helper-holder .warning').addClass('show');
@@ -368,7 +372,7 @@ Fliplet().then(function () {
 
         changeStates(true);
         toDataUrl(response.thumbnail_url, function (base64Img) {
-          embedlyData.thumbnail_base64 = base64Img;
+          embedlyData.thumbnailBase64 = base64Img;
           Fliplet.Widget.toggleSaveButton(true);
           button.text('Browse your media library');
           $('.audio .info-holder').addClass('hidden');

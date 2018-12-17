@@ -1,6 +1,7 @@
 Fliplet().then(() => {
   $('.spinner-holder').removeClass('animated');
-
+  const EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
+  const LANDSCAPE_ASPECT_RATIO = 1.555;
   const button = $('.add-audio');
   const audioUrlInput = $('#audio_url');
   const widgetInstanceId = Fliplet.Widget.getDefaultId();
@@ -160,13 +161,13 @@ Fliplet().then(() => {
   const oembed = (url) => {
     const params = {
       url,
-      key: '81633801114e4d9f88027be15efb8169',
+      key: EMBEDLY_KEY,
       autoplay: true
     };
     return $.getJSON(`https://api.embedly.com/1/oembed?${$.param(params)}`);
   };
 
-  const audioInputHandler = _.throttle(() => {
+  const audioInputHandler = _.throttle(function handler() {
     const url = this.value;
 
     removeFinalStates();
@@ -192,10 +193,10 @@ Fliplet().then(() => {
           }
 
           const bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
-          embedlyData.orientation = (response.width / response.height > 1.555) ? '16by9' : '4by3';
+          embedlyData.orientation = (response.width / response.height > LANDSCAPE_ASPECT_RATIO) ? '16by9' : '4by3';
           embedlyData.type = response.type;
           embedlyData.url = url;
-          embedlyData.audio_html = bootstrapHtml
+          embedlyData.audioHtml = bootstrapHtml
             .replace('{{html}}', response.html)
             .replace('{{orientation}}', embedlyData.orientation)
             .replace('//cdn', 'https://cdn');
@@ -206,7 +207,7 @@ Fliplet().then(() => {
 
           changeStates(true);
           toDataUrl(response.thumbnail_url, (base64Img) => {
-            embedlyData.thumbnail_base64 = base64Img;
+            embedlyData.thumbnailBase64 = base64Img;
             Fliplet.Widget.toggleSaveButton(true);
             button.text('Browse your media library');
             $('.audio .info-holder').addClass('hidden');
