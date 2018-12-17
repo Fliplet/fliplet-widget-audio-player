@@ -4,6 +4,9 @@ Fliplet().then(() => {
   const LANDSCAPE_ASPECT_RATIO = 1.555;
   const button = $('.add-audio');
   const audioUrlInput = $('#audio_url');
+  const audioTypeSelector = $("input[name='audio-type']");
+  const audioByFilePicker = $('.audio-by-file-picker');
+  const audioByUrl = $('.audio-by-url');
   const widgetInstanceId = Fliplet.Widget.getDefaultId();
   const widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
   let media = $.extend(widgetInstanceData.media, {
@@ -78,6 +81,7 @@ Fliplet().then(() => {
       data.embedlyData = embedlyData;
       data.media = {};
       media = {};
+      data.audioType = 'url';
       await Fliplet.Widget.save(data);
     } else {
       if (data.url && !data.url.match(/^[A-z]+:/i)) {
@@ -91,6 +95,7 @@ Fliplet().then(() => {
       }
 
       data.media.path = null;
+      data.audioType = 'file-picker';
       data.embedlyData = {};
       embedlyData = {};
     }
@@ -105,6 +110,23 @@ Fliplet().then(() => {
   };
 
   button.click(browseClickHandler);
+
+  audioTypeSelector.on('change', function audioTypeChangeHandler() {
+    if ($(this).val() === 'file-picker') {
+      audioByFilePicker.addClass('show');
+      audioByUrl.removeClass('show');
+      embedlyData = {};
+    } else {
+      audioByFilePicker.removeClass('show');
+      audioByUrl.addClass('show');
+    }
+  });
+
+  if (!widgetInstanceData.audioType || widgetInstanceData.audioType === 'file-picker') {
+    audioTypeSelector.first().attr('checked', true).trigger('change');
+  } else if (widgetInstanceData.audioType === 'url') {
+    audioTypeSelector.last().attr('checked', true).trigger('change');
+  }
 
   $('.audio-remove').on('click', () => {
     media.selectFiles = [];
@@ -121,8 +143,6 @@ Fliplet().then(() => {
     }
     save(true);
   });
-
-
   const removeFinalStates = () => {
     if ($('.audio-states .fail').hasClass('show')) {
       $('.audio-states .fail').removeClass('show');

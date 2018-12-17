@@ -37,7 +37,9 @@ describe('WHEN start component', function () {
 
   describe('Interface with url input', function () {
     it('when a url is typed in the #audio_url input, the loading spinner should show', function (done) {
-      interfaceBrowser.type('#audio_url', 'www.google.com')
+      interfaceBrowser
+        .click('.radio-label:nth-child(2)')
+        .type('#audio_url', 'www.google.com')
         .evaluate(() => document.querySelector('.loading').classList.contains('show'))
         .then((isLoadingShown) => {
           expect(isLoadingShown).to.equal(true);

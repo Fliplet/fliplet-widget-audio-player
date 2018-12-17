@@ -106,3 +106,19 @@ body {
     display: none;
     margin: 10px 0;
 }
+
+.show{
+  display: block;
+}
+.audio-by-file-picker,
+.audio-by-url{
+  display: none;
+}
+.radio-label{
+  font-weight: normal;
+  margin-right:10px;
+}
+
+.radio-label span{
+  margin-right: 5px;
+}

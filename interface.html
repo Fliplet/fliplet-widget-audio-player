@@ -8,6 +8,19 @@
       <a href="#">Need help?</a>
     </header>
     <div class="form-group">
+      <label>Audio source</label>
+      <div>
+        <label class="radio-label">
+          <span>Select an audio file</span>
+          <input type="radio" name="audio-type" value="file-picker" checked />
+        </label>
+        <label class="radio-label">
+          <span>Provide an audio URL</span>
+          <input type="radio" name="audio-type" value="url" />
+        </label>
+      </div>
+    </div>
+    <div class="form-group audio-by-file-picker">
       <div>
         <label for="add-document">Select an audio</label>
       </div>
@@ -27,12 +40,12 @@
             </div>
           </div>
         </div>
+        <div class="helper-holder clearfix">
+          <div class="alert alert-warning warning show">This will only work if the user is online.</div>
+        </div>
       </div>
     </div>
-    <div class="form-group control-label">
-      - Or -
-    </div>
-    <div class="form-group">
+    <div class="form-group audio-by-url">
       <div class="col-sm-4 control-label">
         <label for="audio_url">Paste your audio URL</label>
         <p class="help-block">See <a href="http://embed.ly/providers" target="_blank">embedly</a> for a list of

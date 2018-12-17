@@ -107,6 +107,9 @@ Fliplet().then(function () {
   var LANDSCAPE_ASPECT_RATIO = 1.555;
   var button = $('.add-audio');
   var audioUrlInput = $('#audio_url');
+  var audioTypeSelector = $("input[name='audio-type']");
+  var audioByFilePicker = $('.audio-by-file-picker');
+  var audioByUrl = $('.audio-by-url');
   var widgetInstanceId = Fliplet.Widget.getDefaultId();
   var widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
   var media = $.extend(widgetInstanceData.media, {
@@ -218,21 +221,22 @@ Fliplet().then(function () {
               data = {};
 
               if (!embedlyData.url) {
-                _context2.next = 9;
+                _context2.next = 10;
                 break;
               }
 
               data.embedlyData = embedlyData;
               data.media = {};
               media = {};
-              _context2.next = 7;
+              data.audioType = 'url';
+              _context2.next = 8;
               return Fliplet.Widget.save(data);
 
-            case 7:
-              _context2.next = 14;
+            case 8:
+              _context2.next = 16;
               break;
 
-            case 9:
+            case 10:
               if (data.url && !data.url.match(/^[A-z]+:/i)) {
                 data.url = "http://".concat(data.url);
               }
@@ -244,21 +248,22 @@ Fliplet().then(function () {
               }
 
               data.media.path = null;
+              data.audioType = 'file-picker';
               data.embedlyData = {};
               embedlyData = {};
 
-            case 14:
-              _context2.next = 16;
+            case 16:
+              _context2.next = 18;
               return Fliplet.Widget.save(data);
 
-            case 16:
+            case 18:
               if (notifyComplete) {
                 Fliplet.Widget.complete();
               } else {
                 Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
               }
 
-            case 17:
+            case 19:
             case "end":
               return _context2.stop();
           }
@@ -272,6 +277,23 @@ Fliplet().then(function () {
   }();
 
   button.click(browseClickHandler);
+  audioTypeSelector.on('change', function audioTypeChangeHandler() {
+    if ($(this).val() === 'file-picker') {
+      audioByFilePicker.addClass('show');
+      audioByUrl.removeClass('show');
+      embedlyData = {};
+    } else {
+      audioByFilePicker.removeClass('show');
+      audioByUrl.addClass('show');
+    }
+  });
+
+  if (!widgetInstanceData.audioType || widgetInstanceData.audioType === 'file-picker') {
+    audioTypeSelector.first().attr('checked', true).trigger('change');
+  } else if (widgetInstanceData.audioType === 'url') {
+    audioTypeSelector.last().attr('checked', true).trigger('change');
+  }
+
   $('.audio-remove').on('click', function () {
     media.selectFiles = [];
     media.toRemove = true;
