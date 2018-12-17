@@ -349,9 +349,15 @@ Fliplet().then(function () {
       Fliplet.Widget.toggleSaveButton(false);
       $('.helper-holder .warning').removeClass('show');
       oembed(url).then(function (response) {
+        embedlyData.embedly = response;
+
+        if (response.type !== 'rich') {
+          changeStates(false);
+          return;
+        }
+
         var bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
         embedlyData.orientation = response.width / response.height > 1.555 ? "16by9" : "4by3";
-        embedlyData.embedly = response;
         embedlyData.type = response.type;
         embedlyData.url = url;
         embedlyData.audio_html = bootstrapHtml.replace("{{html}}", response.html).replace("{{orientation}}", embedlyData.orientation).replace("//cdn", "https://cdn");
