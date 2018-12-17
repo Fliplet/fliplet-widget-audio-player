@@ -2,7 +2,7 @@ Fliplet().then(() => {
   $('.spinner-holder').removeClass('animated');
 
   const button = $('.add-audio');
-  const audioUrlInput = $("#audio_url");
+  const audioUrlInput = $('#audio_url');
   const widgetInstanceId = Fliplet.Widget.getDefaultId();
   const widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
   let media = $.extend(widgetInstanceData.media, {
@@ -75,11 +75,10 @@ Fliplet().then(() => {
     const data = {};
     if (embedlyData.url) {
       data.embedlyData = embedlyData;
-      data.media = media = {};
+      data.media = {};
+      media = {};
       await Fliplet.Widget.save(data);
-    }
-    else {
-
+    } else {
       if (data.url && !data.url.match(/^[A-z]+:/i)) {
         data.url = `http://${data.url}`;
       }
@@ -91,7 +90,8 @@ Fliplet().then(() => {
       }
 
       data.media.path = null;
-      data.embedlyData = embedlyData = {};
+      data.embedlyData = {};
+      embedlyData = {};
     }
 
     await Fliplet.Widget.save(data);
@@ -129,7 +129,7 @@ Fliplet().then(() => {
     } else if ($('.audio-states .success').hasClass('show')) {
       $('.audio-states .success').removeClass('show');
     }
-  }
+  };
   const changeStates = (success) => {
     if (success) {
       $('.audio-states .loading').removeClass('show');
@@ -139,35 +139,35 @@ Fliplet().then(() => {
       $('.audio-states .fail').addClass('show');
       $('.helper-holder .error').addClass('show');
     }
-  }
+  };
 
   // http://stackoverflow.com/a/20285053/1978835
   const toDataUrl = (url, callback) => {
-    let xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
     xhr.responseType = 'blob';
-    xhr.onload = function () {
-      let reader = new FileReader();
+    xhr.onload = () => {
+      const reader = new FileReader();
       reader.onloadend = () => {
         callback(reader.result);
       };
       reader.readAsDataURL(xhr.response);
     };
-    xhr.open('GET', Fliplet.Env.get('apiUrl') + 'v1/communicate/proxy/' + url);
+    xhr.open('GET', `${Fliplet.Env.get('apiUrl')}v1/communicate/proxy/${url}`);
     xhr.setRequestHeader('auth-token', Fliplet.User.getAuthToken());
     xhr.send();
-  }
+  };
 
   const oembed = (url) => {
-    let params = {
-      url: url,
-      key: "81633801114e4d9f88027be15efb8169",
+    const params = {
+      url,
+      key: '81633801114e4d9f88027be15efb8169',
       autoplay: true
     };
-    return $.getJSON('https://api.embedly.com/1/oembed?' + $.param(params));
-  }
+    return $.getJSON(`https://api.embedly.com/1/oembed?${$.param(params)}`);
+  };
 
-  const audioInputHandler = _.throttle(function () {
-    let url = this.value;
+  const audioInputHandler = _.throttle(() => {
+    const url = this.value;
 
     removeFinalStates();
     $('.audio-states .initial').addClass('hidden');
@@ -184,21 +184,21 @@ Fliplet().then(() => {
 
       $('.helper-holder .warning').removeClass('show');
       oembed(url)
-        .then(function (response) {
+        .then((response) => {
           embedlyData.embedly = response;
-          if(response.type!=='rich'){
+          if (response.type !== 'rich') {
             changeStates(false);
             return;
           }
-          
-          let bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
-          embedlyData.orientation = (response.width / response.height > 1.555) ? "16by9" : "4by3";
+
+          const bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
+          embedlyData.orientation = (response.width / response.height > 1.555) ? '16by9' : '4by3';
           embedlyData.type = response.type;
           embedlyData.url = url;
           embedlyData.audio_html = bootstrapHtml
-            .replace("{{html}}", response.html)
-            .replace("{{orientation}}", embedlyData.orientation)
-            .replace("//cdn", "https://cdn");
+            .replace('{{html}}', response.html)
+            .replace('{{orientation}}', embedlyData.orientation)
+            .replace('//cdn', 'https://cdn');
 
           if (response.type === 'link') {
             $('.helper-holder .warning').addClass('show');
@@ -214,7 +214,7 @@ Fliplet().then(() => {
             Fliplet.Widget.info('Audio file selected');
           });
         })
-        .catch(function () {
+        .catch(() => {
           changeStates(false);
           Fliplet.Widget.toggleSaveButton(true);
         });

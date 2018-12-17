@@ -33,7 +33,6 @@ describe('WHEN start component', function () {
           done();
         });
     });
-
   });
 
   describe('Interface with url input', function () {
@@ -45,8 +44,8 @@ describe('WHEN start component', function () {
           done();
         });
     });
-  })
-  
+  });
+
   describe('Build', function () {
     it('should a placeholder for audio player', function (done) {
       buildBrowser
