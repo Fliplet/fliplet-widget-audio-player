@@ -34,6 +34,9 @@ describe('WHEN start component', function () {
         });
     });
 
+  });
+
+  describe('Interface with url input', function () {
     it('when a url is typed in the #audio_url input, the loading spinner should show', function (done) {
       interfaceBrowser.type('#audio_url', 'www.google.com')
         .evaluate(() => document.querySelector('.loading').classList.contains('show'))
@@ -42,8 +45,8 @@ describe('WHEN start component', function () {
           done();
         });
     });
-  });
-
+  })
+  
   describe('Build', function () {
     it('should a placeholder for audio player', function (done) {
       buildBrowser
