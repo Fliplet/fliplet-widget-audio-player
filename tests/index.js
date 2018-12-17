@@ -1,7 +1,7 @@
 /* eslint-disable func-names */
 describe('WHEN start component', function () {
   this.timeout(100000);
-  describe('Interface', function () {
+  describe('Interface with Filepicker', function () {
     it('should show the button in its initial state', function (done) {
       interfaceBrowser
         .evaluate(function (selector) {
@@ -28,13 +28,19 @@ describe('WHEN start component', function () {
       interfaceBrowser.click('.add-audio')
         .wait('[data-package="com.fliplet.file-picker"]')
         .evaluate(() => !!document.querySelector('[data-package="com.fliplet.file-picker"]'))
-        .end()
         .then((filePickerExists) => {
           expect(filePickerExists).to.equal(true);
           done();
         });
+    });
 
-      expect(interfaceBrowser);
+    it('when a url is typed in the #audio_url input, the loading spinner should show', function (done) {
+      interfaceBrowser.type('#audio_url', 'www.google.com')
+        .evaluate(() => document.querySelector('.loading').classList.contains('show'))
+        .then((isLoadingShown) => {
+          expect(isLoadingShown).to.equal(true);
+          done();
+        });
     });
   });
 

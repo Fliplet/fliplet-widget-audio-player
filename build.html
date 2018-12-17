@@ -2,6 +2,20 @@
   {{#if media.url}}
     <div data-title="{{media.name}}" data-audio-url="{{media.url}}"></div>
   {{else}}
-    <div class="placeholder">No audio file added</div>
+    {{#if embedlyData.thumbnail_base64}}
+    <div class="audio-holder">
+      <div class="fl-audio-thumb-holder">
+        <img src="{{embedlyData.thumbnail_base64}}"/>
+      </div>
+    </div>
+    {{else}}
+      {{#if embedlyData.audio_html}}
+      <div class="audio-holder">
+        <div class="audio-placeholder"></div>
+      </div>
+      {{else}}
+        <div class="placeholder">No audio file added</div>
+      {{/if}}
+    {{/if}}
   {{/if}}
 </div>

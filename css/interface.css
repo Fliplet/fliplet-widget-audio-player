@@ -40,7 +40,9 @@ body {
   line-height: 44px;
   padding: 0 15px;
 }
-
+.form-group > div{
+  padding: 0;
+}
 .form-group .btn-default:focus {
   outline: none;
 }
@@ -71,4 +73,36 @@ body {
 .info-holder .btn-link.text-danger:focus,
 .info-holder .btn-link.text-danger:hover {
   color: #a94442 !important;
+}
+
+.audio-states .fail,
+.audio-states .loading,
+.audio-states .success {
+    display: none;
+}
+
+.helper-holder {
+  margin-top: 5px;
+  font-size: 0.9em;
+}
+
+.helper-holder #add-multiple,
+.helper-holder #add-single {
+  float: right;
+}
+.helper-holder .warning{
+  display: none
+}
+
+.helper-holder .warning.show{
+  display: block;
+}
+
+.help-block{
+  font-size: 0.8em;
+}
+
+.error {
+    display: none;
+    margin: 10px 0;
 }

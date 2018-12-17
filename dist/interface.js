@@ -104,6 +104,7 @@ __webpack_require__.r(__webpack_exports__);
 Fliplet().then(function () {
   $('.spinner-holder').removeClass('animated');
   var button = $('.add-audio');
+  var audioUrlInput = $("#audio_url");
   var widgetInstanceId = Fliplet.Widget.getDefaultId();
   var widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
   var media = $.extend(widgetInstanceData.media, {
@@ -113,6 +114,7 @@ Fliplet().then(function () {
     selectMultiple: false,
     type: 'audio'
   });
+  var embedlyData = {};
   var providerInstance;
   var config = media;
 
@@ -159,6 +161,7 @@ Fliplet().then(function () {
                       {
                         var msg = data.length ? 'Audio file selected' : 'no selected audio file';
                         Fliplet.Widget.toggleSaveButton(!!data.length);
+                        audioUrlInput.val('');
                         Fliplet.Widget.info(msg);
                         break;
                       }
@@ -204,7 +207,7 @@ Fliplet().then(function () {
   function () {
     var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
     /*#__PURE__*/
-    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
+    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2(notifyComplete) {
       var data;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
         while (1) {
@@ -212,6 +215,21 @@ Fliplet().then(function () {
             case 0:
               data = {};
 
+              if (!embedlyData.url) {
+                _context2.next = 8;
+                break;
+              }
+
+              data.embedlyData = embedlyData;
+              data.media = media = {};
+              _context2.next = 6;
+              return Fliplet.Widget.save(data);
+
+            case 6:
+              _context2.next = 12;
+              break;
+
+            case 8:
               if (data.url && !data.url.match(/^[A-z]+:/i)) {
                 data.url = "http://".concat(data.url);
               }
@@ -223,13 +241,20 @@ Fliplet().then(function () {
               }
 
               data.media.path = null;
-              _context2.next = 6;
+              data.embedlyData = embedlyData = {};
+
+            case 12:
+              _context2.next = 14;
               return Fliplet.Widget.save(data);
 
-            case 6:
-              Fliplet.Widget.complete();
+            case 14:
+              if (notifyComplete) {
+                Fliplet.Widget.complete();
+              } else {
+                Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
+              }
 
-            case 7:
+            case 15:
             case "end":
               return _context2.stop();
           }
@@ -237,7 +262,7 @@ Fliplet().then(function () {
       }, _callee2, this);
     }));
 
-    return function save() {
+    return function save(_x2) {
       return _ref2.apply(this, arguments);
     };
   }();
@@ -256,8 +281,102 @@ Fliplet().then(function () {
       return providerInstance.forwardSaveRequest();
     }
 
-    save();
+    save(true);
   });
+
+  var removeFinalStates = function removeFinalStates() {
+    if ($('.audio-states .fail').hasClass('show')) {
+      $('.audio-states .fail').removeClass('show');
+      $('.helper-holder .error').removeClass('show');
+    } else if ($('.audio-states .success').hasClass('show')) {
+      $('.audio-states .success').removeClass('show');
+    }
+  };
+
+  var changeStates = function changeStates(success) {
+    if (success) {
+      $('.audio-states .loading').removeClass('show');
+      $('.audio-states .success').addClass('show');
+    } else {
+      $('.audio-states .loading').removeClass('show');
+      $('.audio-states .fail').addClass('show');
+      $('.helper-holder .error').addClass('show');
+    }
+  }; // http://stackoverflow.com/a/20285053/1978835
+
+
+  var toDataUrl = function toDataUrl(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+
+    xhr.onload = function () {
+      var reader = new FileReader();
+
+      reader.onloadend = function () {
+        callback(reader.result);
+      };
+
+      reader.readAsDataURL(xhr.response);
+    };
+
+    xhr.open('GET', Fliplet.Env.get('apiUrl') + 'v1/communicate/proxy/' + url);
+    xhr.setRequestHeader('auth-token', Fliplet.User.getAuthToken());
+    xhr.send();
+  };
+
+  var oembed = function oembed(url) {
+    var params = {
+      url: url,
+      key: "81633801114e4d9f88027be15efb8169",
+      autoplay: true
+    };
+    return $.getJSON('https://api.embedly.com/1/oembed?' + $.param(params));
+  };
+
+  var audioInputHandler = _.throttle(function () {
+    var url = this.value;
+    removeFinalStates();
+    $('.audio-states .initial').addClass('hidden');
+    $('.audio-states .loading').addClass('show');
+
+    if ($(this).val().length === 0) {
+      $('.audio-states .initial').removeClass('hidden');
+      $('.audio-states .loading').removeClass('show');
+      embedlyData = {};
+      save(false);
+      Fliplet.Widget.info('No selected audio file');
+    } else {
+      Fliplet.Widget.toggleSaveButton(false);
+      $('.helper-holder .warning').removeClass('show');
+      oembed(url).then(function (response) {
+        var bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
+        embedlyData.orientation = response.width / response.height > 1.555 ? "16by9" : "4by3";
+        embedlyData.embedly = response;
+        embedlyData.type = response.type;
+        embedlyData.url = url;
+        embedlyData.audio_html = bootstrapHtml.replace("{{html}}", response.html).replace("{{orientation}}", embedlyData.orientation).replace("//cdn", "https://cdn");
+
+        if (response.type === 'link') {
+          $('.helper-holder .warning').addClass('show');
+        }
+
+        changeStates(true);
+        toDataUrl(response.thumbnail_url, function (base64Img) {
+          embedlyData.thumbnail_base64 = base64Img;
+          Fliplet.Widget.toggleSaveButton(true);
+          button.text('Browse your media library');
+          $('.audio .info-holder').addClass('hidden');
+          save(false);
+          Fliplet.Widget.info('Audio file selected');
+        });
+      }).catch(function () {
+        changeStates(false);
+        Fliplet.Widget.toggleSaveButton(true);
+      });
+    }
+  }, 1000);
+
+  audioUrlInput.on('input', audioInputHandler);
   Fliplet.Widget.onCancelRequest(function () {
     if (providerInstance) {
       providerInstance.close();

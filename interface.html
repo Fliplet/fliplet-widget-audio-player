@@ -5,6 +5,7 @@
   <div id="audioSection" class="section">
     <header>
       <p>Configure your audio player</p>
+      <a href="#">Need help?</a>
     </header>
     <div class="form-group">
       <div>
@@ -26,10 +27,37 @@
             </div>
           </div>
         </div>
-        <p class="help-block">
-          When the user taps to play the audio, it will be displayed within your
-        app using an audio player. This will only work if the user is online. 
-        </p>
+      </div>
+    </div>
+    <div class="form-group control-label">
+      - Or -
+    </div>
+    <div class="form-group">
+      <div class="col-sm-4 control-label">
+        <label for="audio_url">Paste your audio URL</label>
+        <p class="help-block">See <a href="http://embed.ly/providers" target="_blank">embedly</a> for a list of
+          supported audio providers.</p>
+      </div>
+      <div class="col-sm-8">
+        <div class="input-group">
+          <input type="url" class="form-control" id="audio_url" name="audio-url" placeholder="e.g. https://vimeo.com/channels/staffpicks/137643804"
+            value="{{#if embedlyData.url}}{{embedlyData.url}}{{/if}}">
+          <div class="input-group-addon audio-states">
+            <div class="initial"><i class="fa fa-chevron-right" aria-hidden="true"></i></div>
+            <div class="loading"><i class="fa fa-spinner fa-spin" aria-hidden="true"></i></div>
+            <div class="success"><i class="fa fa-check" aria-hidden="true"></i></div>
+            <div class="fail"><i class="fa fa-times" aria-hidden="true"></i></div>
+          </div>
+        </div>
+        <div class="helper-holder clearfix">
+          <div class="alert alert-warning">
+            When the user taps to play the audio, it will be displayed within your
+            app using an audio player. This will only work if the user is online.
+          </div>
+          <div class="alert alert-danger error">The link doesn’t contain a audio or it is not supported.</div>
+          <div class="alert alert-warning warning">The link doesn't support inline audio playback. Your audio will play
+            in the in-app browser (for native apps) or a new tab (for web apps).</div>
+        </div>
       </div>
     </div>
   </div>
