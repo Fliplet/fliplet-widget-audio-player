@@ -206,7 +206,6 @@ Fliplet().then(() => {
       $('.helper-holder .warning').removeClass('show');
       oembed(url)
         .then((response) => {
-          embedlyData.embedly = response;
           if (response.type !== 'rich') {
             changeStates(false);
             return;

@@ -7,24 +7,30 @@
       <p>Configure your audio player</p>
       <a href="#">Need help?</a>
     </header>
-    <div class="form-group">
-      <label>Audio source</label>
-      <div>
-        <label class="radio-label">
-          <span>Select an audio file</span>
-          <input type="radio" name="audio-type" value="file-picker" checked />
-        </label>
-        <label class="radio-label">
-          <span>Provide an audio URL</span>
-          <input type="radio" name="audio-type" value="url" />
-        </label>
+    <div class="form-group clearfix">
+      <div class="col-sm-4 control-label">
+        <label>Audio source</label>
+      </div>
+      <div class="col-sm-8">
+        <div class="radio radio-icon">
+          <input type="radio" id="file-picker" name="audio-type" value="file-picker" checked>
+          <label for="file-picker">
+            <span class="check"><i class="fa fa-circle"></i></span> Select an audio file
+          </label>
+        </div>
+        <div class="radio radio-icon">
+          <input type="radio" id="url" name="audio-type" value="url">
+          <label for="url">
+            <span class="check"><i class="fa fa-circle"></i></span>Provide an audio URL
+          </label>
+        </div>
       </div>
     </div>
     <div class="form-group audio-by-file-picker">
-      <div>
+      <div class="col-sm-4 control-label">
         <label for="add-document">Select an audio</label>
       </div>
-      <div>
+      <div class="col-sm-8">
         <div class="file-holder audio">
           <div class="btn btn-default add-audio">
             {{#unless media.id}}Browse your media library{{else}}Replace

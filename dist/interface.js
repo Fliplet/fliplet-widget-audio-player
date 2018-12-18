@@ -375,8 +375,6 @@ Fliplet().then(function () {
       Fliplet.Widget.toggleSaveButton(false);
       $('.helper-holder .warning').removeClass('show');
       oembed(url).then(function (response) {
-        embedlyData.embedly = response;
-
         if (response.type !== 'rich') {
           changeStates(false);
           return;
