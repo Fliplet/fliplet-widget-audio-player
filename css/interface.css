@@ -114,11 +114,3 @@ body {
 .audio-by-url{
   display: none;
 }
-.radio-label{
-  font-weight: normal;
-  margin-right:10px;
-}
-
-.radio-label span{
-  margin-right: 5px;
-}

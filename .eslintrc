@@ -15,7 +15,8 @@
     "interfaceUrl": true,
     "buildUrl": true,
     "widgetInstance": true,
-    "buildSelector": true
+    "buildSelector": true,
+    "Handlebars": true
   },
   "rules": {
     "array-bracket-spacing": [2, "never"],

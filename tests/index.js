@@ -1,6 +1,6 @@
 /* eslint-disable func-names */
 describe('WHEN start component', function () {
-  this.timeout(100000);
+  this.timeout(30000);
   describe('Interface with Filepicker', function () {
     it('should show the button in its initial state', function (done) {
       interfaceBrowser
@@ -38,8 +38,9 @@ describe('WHEN start component', function () {
   describe('Interface with url input', function () {
     it('when a url is typed in the #audio_url input, the loading spinner should show', function (done) {
       interfaceBrowser
-        .click('.radio-label:nth-child(2)')
+        .click('.radio:nth-child(2) input')
         .type('#audio_url', 'www.google.com')
+        .wait()
         .evaluate(() => document.querySelector('.loading').classList.contains('show'))
         .then((isLoadingShown) => {
           expect(isLoadingShown).to.equal(true);
@@ -55,7 +56,7 @@ describe('WHEN start component', function () {
           return document.querySelector(selector).textContent;
         }, '.placeholder')
         .then(function (placeHolderText) {
-          expect(placeHolderText).to.equal('No audio file added');
+          expect(placeHolderText).to.equal('No audio provided');
           done();
         });
     });

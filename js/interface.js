@@ -9,7 +9,7 @@ Fliplet().then(() => {
   const audioByUrl = $('.audio-by-url');
   const widgetInstanceId = Fliplet.Widget.getDefaultId();
   const widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
-  let media = $.extend(widgetInstanceData.media, {
+  const media = $.extend(widgetInstanceData.media, {
     selectedFiles: {},
     selectFiles: [], // To use the restore on File Picker
     selectMultiple: false,
@@ -79,9 +79,6 @@ Fliplet().then(() => {
     const data = {};
     if (embedlyData.url) {
       data.embedlyData = embedlyData;
-      data.media = {};
-      media = {};
-      data.audioType = 'url';
       await Fliplet.Widget.save(data);
     } else {
       if (data.url && !data.url.match(/^[A-z]+:/i)) {
@@ -95,10 +92,11 @@ Fliplet().then(() => {
       }
 
       data.media.path = null;
-      data.audioType = 'file-picker';
-      data.embedlyData = {};
-      embedlyData = {};
     }
+    // save the audio type
+    data.audioType = audioTypeSelector.filter(function filter() {
+      return $(this).prop('checked');
+    }).val();
 
     await Fliplet.Widget.save(data);
 
@@ -115,7 +113,6 @@ Fliplet().then(() => {
     if ($(this).val() === 'file-picker') {
       audioByFilePicker.addClass('show');
       audioByUrl.removeClass('show');
-      embedlyData = {};
     } else {
       audioByFilePicker.removeClass('show');
       audioByUrl.addClass('show');
@@ -141,6 +138,7 @@ Fliplet().then(() => {
     if (providerInstance) {
       return providerInstance.forwardSaveRequest();
     }
+
     save(true);
   });
   const removeFinalStates = () => {

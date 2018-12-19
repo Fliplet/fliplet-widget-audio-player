@@ -1,6 +1,10 @@
 <div data-fliplet-audio-player-id="{{id}}">
-  {{#if media.url}}
-    <div data-title="{{media.name}}" data-audio-url="{{media.url}}"></div>
+  {{#equals audioType 'file-picker'}}
+    {{#if media.url}}
+      <div data-title="{{media.name}}" data-audio-url="{{media.url}}"></div>
+    {{else}}
+      <div class="placeholder">No audio file selected</div>
+    {{/if}}
   {{else}}
     {{#if embedlyData.thumbnailBase64}}
     <div class="audio-holder">
@@ -14,8 +18,8 @@
         <div class="audio-placeholder"></div>
       </div>
       {{else}}
-        <div class="placeholder">No audio file added</div>
+        <div class="placeholder">No audio provided</div>
       {{/if}}
     {{/if}}
-  {{/if}}
+  {{/equals}}
 </div>
