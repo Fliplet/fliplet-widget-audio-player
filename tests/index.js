@@ -40,7 +40,7 @@ describe('WHEN start component', function () {
       interfaceBrowser
         .click('.radio:nth-child(2) input')
         .type('#audio_url', 'www.google.com')
-        .wait()
+        .wait(1000)
         .evaluate(() => document.querySelector('.loading').classList.contains('show'))
         .then((isLoadingShown) => {
           expect(isLoadingShown).to.equal(true);
