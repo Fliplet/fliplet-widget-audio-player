@@ -16,3 +16,54 @@
   overflow: hidden;
   margin-bottom: 10px;
 }
+
+.audio-placeholder {
+  border: 1px solid #cccccc;
+  background-color: rgba(217, 221, 222, 0.5);
+  text-align: center;
+  height: 200px;
+  color: #333333;
+  font-size: 32px;
+  cursor: pointer;
+  -webkit-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-modify: read-only !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.audio-placeholder:after {
+  content: "\f16a";
+  -webkit-font-smoothing: antialiased;
+  font-family: FontAwesome;
+  font-size: 50px;
+}
+.fl-audio-thumb-holder {
+  position: relative;
+  text-align: center;
+}
+.fl-audio-thumb-holder:after {
+  content: "\f01d";
+  position: absolute;
+  -webkit-font-smoothing: antialiased;
+  font-family: FontAwesome;
+  font-size: 80px;
+  line-height: 80px;
+  text-align: center;
+  width: 80px;
+  height: 80px;
+  top: calc(50% - 40px);
+  left: calc(50% - 40px);
+  color: #FFF;
+  -webkit-text-shadow: 0 0 15px rgba(0,0,0,0.5);
+  -moz-box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  text-shadow: 0 0 15px rgba(0,0,0,0.5);
+  cursor: pointer;
+  pointer-events: none;
+}
+.fl-audio-thumb-holder img {
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+}
