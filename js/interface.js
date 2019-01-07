@@ -110,7 +110,7 @@ Fliplet().then(() => {
   button.click(browseClickHandler);
 
   $('#try-stream-single').on('click', function () {
-    audioUrlInput.val('https://soundcloud.com/reminiscience/chopin-nocturne-op-9-no-2').trigger('change');
+    audioUrlInput.val('https://open.spotify.com/track/2YarjDYjBJuH63dUIh9OWv?si=PlS4yiAWT9afuC2UyVKCeA').trigger('change');
   });
 
   if (widgetInstanceData.embedlyData.url) {
