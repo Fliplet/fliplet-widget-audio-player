@@ -109,6 +109,7 @@ Fliplet().then(function () {
   var audioTypeSelector = $("input[name='audio-type']");
   var audioByFilePicker = $('.audio-by-file-picker');
   var audioByUrl = $('.audio-by-url');
+  var refreshButton = $('[data-refresh]');
   var widgetInstanceId = Fliplet.Widget.getDefaultId();
   var widgetInstanceData = Fliplet.Widget.getData(widgetInstanceId) || {};
   var media = $.extend(widgetInstanceData.media, {
@@ -279,6 +280,15 @@ Fliplet().then(function () {
   $('#try-stream-single').on('click', function () {
     audioUrlInput.val('https://soundcloud.com/reminiscience/chopin-nocturne-op-9-no-2').trigger('change');
   });
+
+  if (widgetInstanceData.embedlyData.url) {
+    refreshButton.removeClass('hidden');
+  }
+
+  refreshButton.on('click', function (e) {
+    e.preventDefault();
+    audioUrlInput.trigger('input');
+  });
   audioTypeSelector.on('change',
   /*#__PURE__*/
   function () {
@@ -396,6 +406,7 @@ Fliplet().then(function () {
     removeFinalStates();
     $('.audio-states .initial').addClass('hidden');
     $('.audio-states .loading').addClass('show');
+    refreshButton.addClass('hidden');
 
     if ($(this).val().length === 0) {
       $('.audio-states .initial').removeClass('hidden');
@@ -412,6 +423,7 @@ Fliplet().then(function () {
           return;
         }
 
+        refreshButton.removeClass('hidden');
         var bootstrapHtml = '<div class="embedly-holder">{{html}}</div>';
         embedlyData.type = response.type;
         embedlyData.url = url;
