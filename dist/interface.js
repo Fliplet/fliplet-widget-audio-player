@@ -104,7 +104,6 @@ __webpack_require__.r(__webpack_exports__);
 Fliplet().then(function () {
   $('.spinner-holder').removeClass('animated');
   var EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
-  var LANDSCAPE_ASPECT_RATIO = 1.555;
   var button = $('.add-audio');
   var audioUrlInput = $('#audio_url');
   var audioTypeSelector = $("input[name='audio-type']");
@@ -149,7 +148,7 @@ Fliplet().then(function () {
               event.preventDefault();
 
               if (providerInstance) {
-                _context.next = 17;
+                _context.next = 19;
                 break;
               }
 
@@ -193,8 +192,10 @@ Fliplet().then(function () {
               $('.audio .info-holder').removeClass('hidden');
               $('.audio .file-title span').text(media.selectedFiles.name);
               Fliplet.Widget.autosize();
+              _context.next = 19;
+              return save(false);
 
-            case 17:
+            case 19:
             case "end":
               return _context.stop();
           }
@@ -275,15 +276,48 @@ Fliplet().then(function () {
   }();
 
   button.click(browseClickHandler);
-  audioTypeSelector.on('change', function audioTypeChangeHandler() {
-    if ($(this).val() === 'file-picker') {
-      audioByFilePicker.addClass('show');
-      audioByUrl.removeClass('show');
-    } else {
-      audioByFilePicker.removeClass('show');
-      audioByUrl.addClass('show');
-    }
+  $('#try-stream-single').on('click', function () {
+    audioUrlInput.val('https://soundcloud.com/reminiscience/chopin-nocturne-op-9-no-2').trigger('change');
   });
+  audioTypeSelector.on('change',
+  /*#__PURE__*/
+  function () {
+    var _audioTypeChangeHandler = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
+    /*#__PURE__*/
+    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee3() {
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee3$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              if ($(this).val() === 'file-picker') {
+                audioByFilePicker.addClass('show');
+                audioByUrl.removeClass('show');
+              } else {
+                audioByFilePicker.removeClass('show');
+                audioByUrl.addClass('show');
+              }
+
+              widgetInstanceData.audioType = $(this).val();
+              _context3.next = 4;
+              return Fliplet.Widget.save(widgetInstanceData);
+
+            case 4:
+              Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
+
+            case 5:
+            case "end":
+              return _context3.stop();
+          }
+        }
+      }, _callee3, this);
+    }));
+
+    function audioTypeChangeHandler() {
+      return _audioTypeChangeHandler.apply(this, arguments);
+    }
+
+    return audioTypeChangeHandler;
+  }());
 
   if (!widgetInstanceData.audioType || widgetInstanceData.audioType === 'file-picker') {
     audioTypeSelector.first().attr('checked', true).trigger('change');
@@ -351,7 +385,8 @@ Fliplet().then(function () {
     var params = {
       url: url,
       key: EMBEDLY_KEY,
-      autoplay: true
+      autoplay: true,
+      height: 200
     };
     return $.getJSON("https://api.embedly.com/1/oembed?".concat($.param(params)));
   };
@@ -370,29 +405,26 @@ Fliplet().then(function () {
       Fliplet.Widget.info('No selected audio file');
     } else {
       Fliplet.Widget.toggleSaveButton(false);
-      $('.helper-holder .warning').removeClass('show');
+      $('.helper-holder .embedly-warning').removeClass('show');
       oembed(url).then(function (response) {
-        if (response.type !== 'rich') {
+        if (response.type !== 'rich' && response.type !== 'link') {
           changeStates(false);
           return;
         }
 
-        var bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
-        embedlyData.orientation = response.width / response.height > LANDSCAPE_ASPECT_RATIO ? '16by9' : '4by3';
+        var bootstrapHtml = '<div class="embedly-holder">{{html}}</div>';
         embedlyData.type = response.type;
         embedlyData.url = url;
-        embedlyData.audioHtml = bootstrapHtml.replace('{{html}}', response.html).replace('{{orientation}}', embedlyData.orientation).replace('//cdn', 'https://cdn');
+        embedlyData.audioHtml = bootstrapHtml.replace('{{html}}', response.html).replace('//cdn', 'https://cdn');
 
         if (response.type === 'link') {
-          $('.helper-holder .warning').addClass('show');
+          $('.helper-holder .embedly-warning').addClass('show');
         }
 
         changeStates(true);
         toDataUrl(response.thumbnail_url, function (base64Img) {
           embedlyData.thumbnailBase64 = base64Img;
           Fliplet.Widget.toggleSaveButton(true);
-          button.text('Browse your media library');
-          $('.audio .info-holder').addClass('hidden');
           save(false);
           Fliplet.Widget.info('Audio file selected');
         });

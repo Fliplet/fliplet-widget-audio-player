@@ -1,7 +1,6 @@
 Fliplet().then(() => {
   $('.spinner-holder').removeClass('animated');
   const EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
-  const LANDSCAPE_ASPECT_RATIO = 1.555;
   const button = $('.add-audio');
   const audioUrlInput = $('#audio_url');
   const audioTypeSelector = $("input[name='audio-type']");
@@ -66,12 +65,13 @@ Fliplet().then(() => {
       Fliplet.Widget.toggleCancelButton(true);
       Fliplet.Widget.toggleSaveButton(true);
       media.selectedFiles = providerData.data.length === 1 ? providerData.data[0] : providerData.data;
-
+      
       providerInstance = null;
       $('.audio .add-audio').text('Replace audio');
       $('.audio .info-holder').removeClass('hidden');
       $('.audio .file-title span').text(media.selectedFiles.name);
       Fliplet.Widget.autosize();
+      await save(false);
     }
   };
 
@@ -109,14 +109,25 @@ Fliplet().then(() => {
 
   button.click(browseClickHandler);
 
-  audioTypeSelector.on('change', function audioTypeChangeHandler() {
+  $('#try-stream-single').on('click', function () {
+    audioUrlInput.val('https://soundcloud.com/reminiscience/chopin-nocturne-op-9-no-2').trigger('change');
+  });
+
+  audioTypeSelector.on('change', async function audioTypeChangeHandler() {
     if ($(this).val() === 'file-picker') {
       audioByFilePicker.addClass('show');
       audioByUrl.removeClass('show');
+      
     } else {
       audioByFilePicker.removeClass('show');
       audioByUrl.addClass('show');
     }
+
+    widgetInstanceData.audioType = $(this).val();
+
+    await Fliplet.Widget.save(widgetInstanceData);
+
+    Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
   });
 
   if (!widgetInstanceData.audioType || widgetInstanceData.audioType === 'file-picker') {
@@ -141,6 +152,7 @@ Fliplet().then(() => {
 
     save(true);
   });
+
   const removeFinalStates = () => {
     if ($('.audio-states .fail').hasClass('show')) {
       $('.audio-states .fail').removeClass('show');
@@ -180,7 +192,8 @@ Fliplet().then(() => {
     const params = {
       url,
       key: EMBEDLY_KEY,
-      autoplay: true
+      autoplay: true,
+      height: 200
     };
     return $.getJSON(`https://api.embedly.com/1/oembed?${$.param(params)}`);
   };
@@ -201,33 +214,29 @@ Fliplet().then(() => {
     } else {
       Fliplet.Widget.toggleSaveButton(false);
 
-      $('.helper-holder .warning').removeClass('show');
+      $('.helper-holder .embedly-warning').removeClass('show');
       oembed(url)
         .then((response) => {
-          if (response.type !== 'rich') {
+          if (response.type !== 'rich' && response.type !== 'link') {
             changeStates(false);
             return;
           }
 
-          const bootstrapHtml = '<div class="embed-responsive embed-responsive-{{orientation}}">{{html}}</div>';
-          embedlyData.orientation = (response.width / response.height > LANDSCAPE_ASPECT_RATIO) ? '16by9' : '4by3';
+          const bootstrapHtml = '<div class="embedly-holder">{{html}}</div>';
           embedlyData.type = response.type;
           embedlyData.url = url;
           embedlyData.audioHtml = bootstrapHtml
             .replace('{{html}}', response.html)
-            .replace('{{orientation}}', embedlyData.orientation)
             .replace('//cdn', 'https://cdn');
 
           if (response.type === 'link') {
-            $('.helper-holder .warning').addClass('show');
+            $('.helper-holder .embedly-warning').addClass('show');
           }
 
           changeStates(true);
           toDataUrl(response.thumbnail_url, (base64Img) => {
             embedlyData.thumbnailBase64 = base64Img;
             Fliplet.Widget.toggleSaveButton(true);
-            button.text('Browse your media library');
-            $('.audio .info-holder').addClass('hidden');
             save(false);
             Fliplet.Widget.info('Audio file selected');
           });

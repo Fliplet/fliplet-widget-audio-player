@@ -3,7 +3,7 @@
     {{#if media.url}}
       <div data-title="{{media.name}}" data-audio-url="{{media.url}}"></div>
     {{else}}
-      <div class="placeholder">No audio file selected</div>
+      <div class="placeholder"></div>
     {{/if}}
   {{else}}
     {{#if embedlyData.thumbnailBase64}}
@@ -18,7 +18,7 @@
         <div class="audio-placeholder"></div>
       </div>
       {{else}}
-        <div class="placeholder">No audio provided</div>
+        <div class="placeholder"></div>
       {{/if}}
     {{/if}}
   {{/equals}}
