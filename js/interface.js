@@ -65,7 +65,6 @@ Fliplet().then(() => {
       Fliplet.Widget.toggleCancelButton(true);
       Fliplet.Widget.toggleSaveButton(true);
       media.selectedFiles = providerData.data.length === 1 ? providerData.data[0] : providerData.data;
-      
       providerInstance = null;
       $('.audio .add-audio').text('Replace audio');
       $('.audio .info-holder').removeClass('hidden');
