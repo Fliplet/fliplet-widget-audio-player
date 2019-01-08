@@ -113,7 +113,7 @@ Fliplet().then(() => {
     audioUrlInput.val('https://open.spotify.com/track/2YarjDYjBJuH63dUIh9OWv?si=PlS4yiAWT9afuC2UyVKCeA').trigger('change');
   });
 
-  if (widgetInstanceData.embedlyData.url) {
+  if (widgetInstanceData.embedlyData && widgetInstanceData.embedlyData.url) {
     refreshButton.removeClass('hidden');
   }
 
