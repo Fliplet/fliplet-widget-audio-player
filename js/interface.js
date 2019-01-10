@@ -1,6 +1,6 @@
 Fliplet().then(() => {
   $('.spinner-holder').removeClass('animated');
-  const APPROVED_URL_EXTENSIONS = ['mp3'];
+  const APPROVED_EXTENSIONS = ['mp3'];
   const EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
   const button = $('.add-audio');
   const audioUrlInput = $('#audio_url');
@@ -14,7 +14,8 @@ Fliplet().then(() => {
     selectedFiles: {},
     selectFiles: [], // To use the restore on File Picker
     selectMultiple: false,
-    type: 'audio'
+    type: 'audio',
+    fileExtension: APPROVED_EXTENSIONS
   });
   let embedlyData = {};
   let providerInstance;
@@ -78,7 +79,7 @@ Fliplet().then(() => {
 
   const isApprovedFile = (fileName) => {
     const extension = fileName.split('.').pop();
-    return _.includes(APPROVED_URL_EXTENSIONS, extension);
+    return _.includes(APPROVED_EXTENSIONS, extension);
   }
 
   const save = async (notifyComplete) => {

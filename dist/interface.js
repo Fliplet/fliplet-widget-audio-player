@@ -103,7 +103,7 @@ __webpack_require__.r(__webpack_exports__);
 
 Fliplet().then(function () {
   $('.spinner-holder').removeClass('animated');
-  var APPROVED_URL_EXTENSIONS = ['mp3'];
+  var APPROVED_EXTENSIONS = ['mp3'];
   var EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
   var button = $('.add-audio');
   var audioUrlInput = $('#audio_url');
@@ -118,7 +118,8 @@ Fliplet().then(function () {
     selectFiles: [],
     // To use the restore on File Picker
     selectMultiple: false,
-    type: 'audio'
+    type: 'audio',
+    fileExtension: APPROVED_EXTENSIONS
   });
   var embedlyData = {};
   var providerInstance;
@@ -212,7 +213,7 @@ Fliplet().then(function () {
 
   var isApprovedFile = function isApprovedFile(fileName) {
     var extension = fileName.split('.').pop();
-    return _.includes(APPROVED_URL_EXTENSIONS, extension);
+    return _.includes(APPROVED_EXTENSIONS, extension);
   };
 
   var save =
