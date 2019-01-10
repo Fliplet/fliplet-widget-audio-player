@@ -103,6 +103,7 @@ __webpack_require__.r(__webpack_exports__);
 
 Fliplet().then(function () {
   $('.spinner-holder').removeClass('animated');
+  var APPROVED_EXTENSIONS = ['mp3'];
   var EMBEDLY_KEY = '81633801114e4d9f88027be15efb8169';
   var button = $('.add-audio');
   var audioUrlInput = $('#audio_url');
@@ -117,7 +118,8 @@ Fliplet().then(function () {
     selectFiles: [],
     // To use the restore on File Picker
     selectMultiple: false,
-    type: 'audio'
+    type: 'audio',
+    fileExtension: APPROVED_EXTENSIONS
   });
   var embedlyData = {};
   var providerInstance;
@@ -209,6 +211,11 @@ Fliplet().then(function () {
     };
   }();
 
+  var isApprovedFile = function isApprovedFile(fileName) {
+    var extension = fileName.split('.').pop();
+    return _.includes(APPROVED_EXTENSIONS, extension);
+  };
+
   var save =
   /*#__PURE__*/
   function () {
@@ -222,48 +229,54 @@ Fliplet().then(function () {
             case 0:
               data = {};
 
-              if (!embedlyData.url) {
-                _context2.next = 7;
-                break;
+              if (embedlyData.url) {
+                data.embedlyData = embedlyData;
+              } else {
+                if (data.url && !data.url.match(/^[A-z]+:/i)) {
+                  data.url = "http://".concat(data.url);
+                }
+
+                if (media.toRemove) {
+                  data.media = {};
+                } else {
+                  data.media = _.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
+                }
+
+                data.media.path = null;
               }
 
-              data.embedlyData = embedlyData;
+              if (embedlyData.url && !embedlyData.thumbnailBase64 && isApprovedFile(embedlyData.url)) {
+                /**
+                 * this means that embedly did not find a thumbnail for a url which ends with an APPROVED_EXTENSION
+                 */
+                data.embedlyData.thumbnailBase64 = null;
+                data.embedlyData.audioHtml = null;
+                /**
+                 * set the name to be the url,
+                 * since we don't really have a good and robustway to find out what the actual file name is,
+                 * and embedly does not provide it
+                 */
+
+                data.embedlyData.name = data.embedlyData.url;
+              } else {
+                data.audioType = audioTypeSelector.filter(function filter() {
+                  return $(this).prop('checked');
+                }).val();
+              }
+
               _context2.next = 5;
               return Fliplet.Widget.save(data);
 
             case 5:
-              _context2.next = 10;
-              break;
+              widgetInstanceData.embedlyData = data.embedlyData;
 
-            case 7:
-              if (data.url && !data.url.match(/^[A-z]+:/i)) {
-                data.url = "http://".concat(data.url);
-              }
-
-              if (media.toRemove) {
-                data.media = {};
-              } else {
-                data.media = _.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
-              }
-
-              data.media.path = null;
-
-            case 10:
-              // save the audio type
-              data.audioType = audioTypeSelector.filter(function filter() {
-                return $(this).prop('checked');
-              }).val();
-              _context2.next = 13;
-              return Fliplet.Widget.save(data);
-
-            case 13:
               if (notifyComplete) {
                 Fliplet.Widget.complete();
               } else {
                 Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
               }
 
-            case 14:
+            case 7:
             case "end":
               return _context2.stop();
           }
@@ -276,15 +289,178 @@ Fliplet().then(function () {
     };
   }();
 
-  button.click(browseClickHandler);
-  $('#try-stream-single').on('click', function () {
-    audioUrlInput.val('https://open.spotify.com/track/2YarjDYjBJuH63dUIh9OWv?si=PlS4yiAWT9afuC2UyVKCeA').trigger('change');
-  });
+  var toggleWarnings = function toggleWarnings(hasLinkWarning) {
+    if (hasLinkWarning) {
+      $('.helper-holder .embedly-warning').addClass('show');
+      $('.helper-holder .online-warning').removeClass('show');
+    } else {
+      $('.helper-holder .embedly-warning').removeClass('show');
+      $('.helper-holder .online-warning').addClass('show');
+    }
+  };
+
+  var removeFinalStates = function removeFinalStates() {
+    if ($('.audio-states .fail').hasClass('show')) {
+      $('.audio-states .fail').removeClass('show');
+      $('.helper-holder .error').removeClass('show');
+    } else if ($('.audio-states .success').hasClass('show')) {
+      $('.audio-states .success').removeClass('show');
+    }
+  };
+
+  var changeStates = function changeStates(success) {
+    if (success) {
+      $('.audio-states .loading').removeClass('show');
+      $('.audio-states .success').addClass('show');
+    } else {
+      $('.audio-states .loading').removeClass('show');
+      $('.audio-states .fail').addClass('show');
+      $('.helper-holder .error').addClass('show');
+    }
+  }; // http://stackoverflow.com/a/20285053/1978835
+
+
+  var toDataUrl = function toDataUrl(url) {
+    return new Promise(function (r) {
+      var xhr = new XMLHttpRequest();
+      xhr.responseType = 'blob';
+
+      xhr.onload = function () {
+        var reader = new FileReader();
+
+        reader.onloadend = function () {
+          r(reader.result);
+        };
+
+        reader.readAsDataURL(xhr.response);
+      };
+
+      xhr.open('GET', "".concat(Fliplet.Env.get('apiUrl'), "v1/communicate/proxy/").concat(url));
+      xhr.setRequestHeader('auth-token', Fliplet.User.getAuthToken());
+      xhr.send();
+    });
+  };
+
+  var oembed = function oembed(url) {
+    var params = {
+      url: url,
+      key: EMBEDLY_KEY,
+      autoplay: true,
+      height: 200
+    };
+    return $.getJSON("https://api.embedly.com/1/oembed?".concat($.param(params)));
+  };
+
+  var audioInputHandler = _.throttle(function handler() {
+    var url = this.value;
+    removeFinalStates();
+    $('.audio-states .initial').addClass('hidden');
+    $('.audio-states .loading').addClass('show');
+    refreshButton.addClass('hidden');
+
+    if ($(this).val().length === 0) {
+      $('.audio-states .initial').removeClass('hidden');
+      $('.audio-states .loading').removeClass('show');
+      embedlyData = {};
+      save(false);
+      Fliplet.Widget.info('No selected audio file');
+    } else {
+      Fliplet.Widget.toggleSaveButton(false);
+      toggleWarnings(false);
+      oembed(url).then(
+      /*#__PURE__*/
+      function () {
+        var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
+        /*#__PURE__*/
+        _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee3(response) {
+          var bootstrapHtml;
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee3$(_context3) {
+            while (1) {
+              switch (_context3.prev = _context3.next) {
+                case 0:
+                  if (!(response.type !== 'rich' && response.type !== 'link')) {
+                    _context3.next = 3;
+                    break;
+                  }
+
+                  changeStates(false);
+                  return _context3.abrupt("return");
+
+                case 3:
+                  refreshButton.removeClass('hidden');
+                  bootstrapHtml = '<div class="embedly-holder">{{html}}</div>';
+                  embedlyData.type = response.type;
+                  embedlyData.url = url;
+                  embedlyData.audioHtml = bootstrapHtml.replace('{{html}}', response.html).replace('//cdn', 'https://cdn');
+
+                  if (response.type === 'link') {
+                    toggleWarnings(true);
+                  }
+
+                  changeStates(true);
+
+                  if (!response.thumbnail_url) {
+                    _context3.next = 16;
+                    break;
+                  }
+
+                  _context3.next = 13;
+                  return toDataUrl(response.thumbnail_url);
+
+                case 13:
+                  embedlyData.thumbnailBase64 = _context3.sent;
+                  _context3.next = 17;
+                  break;
+
+                case 16:
+                  embedlyData.thumbnailBase64 = null;
+
+                case 17:
+                  save(false);
+                  Fliplet.Widget.toggleSaveButton(true);
+                  Fliplet.Widget.info('Audio file selected');
+
+                case 20:
+                case "end":
+                  return _context3.stop();
+              }
+            }
+          }, _callee3, this);
+        }));
+
+        return function (_x3) {
+          return _ref3.apply(this, arguments);
+        };
+      }()).catch(function () {
+        changeStates(false);
+        Fliplet.Widget.toggleSaveButton(true);
+      });
+    }
+  }, 1000);
+
+  toggleWarnings(widgetInstanceData.embedlyData && widgetInstanceData.embedlyData.type === 'link');
 
   if (widgetInstanceData.embedlyData && widgetInstanceData.embedlyData.url) {
     refreshButton.removeClass('hidden');
   }
 
+  audioUrlInput.on('input', audioInputHandler);
+  Fliplet.Widget.onCancelRequest(function () {
+    if (providerInstance) {
+      providerInstance.close();
+      providerInstance = null;
+      Fliplet.Studio.emit('widget-save-label-update', {
+        text: 'Save & Close'
+      });
+      Fliplet.Widget.toggleCancelButton(true);
+      Fliplet.Widget.toggleSaveButton(true);
+      Fliplet.Widget.info('');
+    }
+  });
+  button.click(browseClickHandler);
+  $('#try-stream-single').on('click', function () {
+    audioUrlInput.val('https://open.spotify.com/track/2YarjDYjBJuH63dUIh9OWv?si=PlS4yiAWT9afuC2UyVKCeA').trigger('input');
+  });
   refreshButton.on('click', function (e) {
     e.preventDefault();
     audioUrlInput.trigger('input');
@@ -294,32 +470,33 @@ Fliplet().then(function () {
   function () {
     var _audioTypeChangeHandler = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()(
     /*#__PURE__*/
-    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee3() {
-      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee3$(_context3) {
+    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee4() {
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee4$(_context4) {
         while (1) {
-          switch (_context3.prev = _context3.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
               if ($(this).val() === 'file-picker') {
                 audioByFilePicker.addClass('show');
                 audioByUrl.removeClass('show');
+                widgetInstanceData.audioType = 'file-picker';
               } else {
                 audioByFilePicker.removeClass('show');
                 audioByUrl.addClass('show');
+                widgetInstanceData.audioType = 'url';
               }
 
-              widgetInstanceData.audioType = $(this).val();
-              _context3.next = 4;
+              _context4.next = 3;
               return Fliplet.Widget.save(widgetInstanceData);
 
-            case 4:
+            case 3:
               Fliplet.Studio.emit('reload-widget-instance', widgetInstanceId);
 
-            case 5:
+            case 4:
             case "end":
-              return _context3.stop();
+              return _context4.stop();
           }
         }
-      }, _callee3, this);
+      }, _callee4, this);
     }));
 
     function audioTypeChangeHandler() {
@@ -349,116 +526,6 @@ Fliplet().then(function () {
     }
 
     save(true);
-  });
-
-  var removeFinalStates = function removeFinalStates() {
-    if ($('.audio-states .fail').hasClass('show')) {
-      $('.audio-states .fail').removeClass('show');
-      $('.helper-holder .error').removeClass('show');
-    } else if ($('.audio-states .success').hasClass('show')) {
-      $('.audio-states .success').removeClass('show');
-    }
-  };
-
-  var changeStates = function changeStates(success) {
-    if (success) {
-      $('.audio-states .loading').removeClass('show');
-      $('.audio-states .success').addClass('show');
-    } else {
-      $('.audio-states .loading').removeClass('show');
-      $('.audio-states .fail').addClass('show');
-      $('.helper-holder .error').addClass('show');
-    }
-  }; // http://stackoverflow.com/a/20285053/1978835
-
-
-  var toDataUrl = function toDataUrl(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.responseType = 'blob';
-
-    xhr.onload = function () {
-      var reader = new FileReader();
-
-      reader.onloadend = function () {
-        callback(reader.result);
-      };
-
-      reader.readAsDataURL(xhr.response);
-    };
-
-    xhr.open('GET', "".concat(Fliplet.Env.get('apiUrl'), "v1/communicate/proxy/").concat(url));
-    xhr.setRequestHeader('auth-token', Fliplet.User.getAuthToken());
-    xhr.send();
-  };
-
-  var oembed = function oembed(url) {
-    var params = {
-      url: url,
-      key: EMBEDLY_KEY,
-      autoplay: true,
-      height: 200
-    };
-    return $.getJSON("https://api.embedly.com/1/oembed?".concat($.param(params)));
-  };
-
-  var audioInputHandler = _.throttle(function handler() {
-    var url = this.value;
-    removeFinalStates();
-    $('.audio-states .initial').addClass('hidden');
-    $('.audio-states .loading').addClass('show');
-    refreshButton.addClass('hidden');
-
-    if ($(this).val().length === 0) {
-      $('.audio-states .initial').removeClass('hidden');
-      $('.audio-states .loading').removeClass('show');
-      embedlyData = {};
-      save(false);
-      Fliplet.Widget.info('No selected audio file');
-    } else {
-      Fliplet.Widget.toggleSaveButton(false);
-      $('.helper-holder .embedly-warning').removeClass('show');
-      oembed(url).then(function (response) {
-        if (response.type !== 'rich' && response.type !== 'link') {
-          changeStates(false);
-          return;
-        }
-
-        refreshButton.removeClass('hidden');
-        var bootstrapHtml = '<div class="embedly-holder">{{html}}</div>';
-        embedlyData.type = response.type;
-        embedlyData.url = url;
-        embedlyData.audioHtml = bootstrapHtml.replace('{{html}}', response.html).replace('//cdn', 'https://cdn');
-
-        if (response.type === 'link') {
-          $('.helper-holder .embedly-warning').addClass('show');
-        }
-
-        changeStates(true);
-        toDataUrl(response.thumbnail_url, function (base64Img) {
-          embedlyData.thumbnailBase64 = base64Img;
-          Fliplet.Widget.toggleSaveButton(true);
-          save(false);
-          Fliplet.Widget.info('Audio file selected');
-        });
-      }).catch(function () {
-        changeStates(false);
-        Fliplet.Widget.toggleSaveButton(true);
-      });
-    }
-  }, 1000);
-
-  audioUrlInput.on('input', audioInputHandler);
-  Fliplet.Widget.onCancelRequest(function () {
-    if (providerInstance) {
-      providerInstance.close();
-      providerInstance = null;
-      Fliplet.Studio.emit('widget-save-label-update', {
-        text: 'Save & Close'
-      });
-      Fliplet.Widget.toggleCancelButton(true);
-      Fliplet.Widget.toggleSaveButton(true);
-      Fliplet.Widget.info('');
-    }
   });
 });
 

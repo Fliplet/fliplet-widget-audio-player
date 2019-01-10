@@ -6,20 +6,28 @@
       <div class="placeholder"></div>
     {{/if}}
   {{else}}
-    {{#if embedlyData.thumbnailBase64}}
-    <div class="audio-holder">
-      <div class="fl-audio-thumb-holder">
-        <img src="{{embedlyData.thumbnailBase64}}"/>
-      </div>
-    </div>
-    {{else}}
-      {{#if embedlyData.audioHtml}}
-      <div class="audio-holder">
-        <div class="audio-placeholder"></div>
-      </div>
+    {{#equals embedlyData.thumbnailBase64 null}}
+      {{#if embedlyData.url}}
+        <div data-title="{{embedlyData.name}}" data-audio-url="{{embedlyData.url}}"></div>
       {{else}}
         <div class="placeholder"></div>
       {{/if}}
-    {{/if}}
+    {{else}}
+      {{#if embedlyData.thumbnailBase64}}
+      <div class="audio-holder">
+        <div class="fl-audio-thumb-holder">
+          <img src="{{embedlyData.thumbnailBase64}}"/>
+        </div>
+      </div>
+      {{else}}
+        {{#if embedlyData.audioHtml}}
+        <div class="audio-holder">
+          <div class="audio-placeholder"></div>
+        </div>
+        {{else}}
+          <div class="placeholder"></div>
+        {{/if}}
+      {{/if}}
+    {{/equals}}
   {{/equals}}
 </div>

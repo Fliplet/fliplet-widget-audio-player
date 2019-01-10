@@ -102,6 +102,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 Fliplet().then(function () {
+  console.log(Fliplet.Media.Audio);
   Fliplet.Widget.instance('fliplet-audio-player',
   /*#__PURE__*/
   function () {
@@ -114,35 +115,41 @@ Fliplet().then(function () {
           switch (_context.prev = _context.next) {
             case 0:
               if (widgetInstanceData.audioType === 'url') {
-                if (widgetInstanceData.embedlyData && widgetInstanceData.embedlyData.thumbnailBase64) {
-                  audioHolder = $('.audio-holder');
-                  startButton = $('.fl-audio-thumb-holder, .audio-placeholder');
-                  startButton.on('click', function () {
-                    if (Fliplet.Navigator.isOnline()) {
-                      Fliplet.Analytics.trackEvent({
-                        category: 'audio',
-                        action: 'play_streaming_online',
-                        title: widgetInstanceData.embedlyData.url
-                      });
+                if (widgetInstanceData.embedlyData) {
+                  if (!widgetInstanceData.embedlyData.thumbnailBase64) {
+                    Fliplet.Media.Audio.Player.init();
+                  } else {
+                    if (widgetInstanceData.embedlyData.thumbnailBase64) {
+                      audioHolder = $("[data-fliplet-audio-player-id=".concat(widgetInstanceData.id, "] .audio-holder"));
+                      startButton = $("[data-fliplet-audio-player-id=".concat(widgetInstanceData.id, "] .fl-audio-thumb-holder, [data-fliplet-audio-player-id=").concat(widgetInstanceData.id, "] .audio-placeholder"));
+                      startButton.on('click', function () {
+                        if (Fliplet.Navigator.isOnline()) {
+                          Fliplet.Analytics.trackEvent({
+                            category: 'audio',
+                            action: 'play_streaming_online',
+                            title: widgetInstanceData.embedlyData.url
+                          });
 
-                      if (widgetInstanceData.embedlyData.type === 'link') {
-                        Fliplet.Navigate.url(widgetInstanceData.embedlyData.url);
-                        return;
-                      }
+                          if (widgetInstanceData.embedlyData.type === 'link') {
+                            Fliplet.Navigate.url(widgetInstanceData.embedlyData.url);
+                            return;
+                          }
 
-                      audioHolder.html(widgetInstanceData.embedlyData.audioHtml);
-                    } else {
-                      Fliplet.Analytics.trackEvent({
-                        category: 'audio',
-                        action: 'play_streaming_offline',
-                        title: widgetInstanceData.embedlyData.url
-                      });
-                      Fliplet.Navigate.popup({
-                        popupTitle: 'Internet Unavailable',
-                        popupMessage: "This audio requires Internet to play. \n                Please try again when Internet is available."
+                          audioHolder.html(widgetInstanceData.embedlyData.audioHtml);
+                        } else {
+                          Fliplet.Analytics.trackEvent({
+                            category: 'audio',
+                            action: 'play_streaming_offline',
+                            title: widgetInstanceData.embedlyData.url
+                          });
+                          Fliplet.Navigate.popup({
+                            popupTitle: 'Internet Unavailable',
+                            popupMessage: "This audio requires Internet to play. \n                  Please try again when Internet is available."
+                          });
+                        }
                       });
                     }
-                  });
+                  }
                 }
               } else if (widgetInstanceData.audioType === 'file-picker') {
                 if (widgetInstanceData.media && widgetInstanceData.media.url) {

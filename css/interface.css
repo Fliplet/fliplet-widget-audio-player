@@ -90,11 +90,11 @@ body {
 .helper-holder #add-single {
   float: right;
 }
-.helper-holder .warning{
+.helper-holder .alert-warning{
   display: none
 }
 
-.helper-holder .warning.show{
+.helper-holder .alert-warning.show{
   display: block;
 }
 
