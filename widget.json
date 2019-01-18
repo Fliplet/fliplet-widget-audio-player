@@ -26,6 +26,7 @@
       "fliplet-audio-player"
     ],
     "assets": [
+      "vendor/player-0.1.0.min.js",
       "css/build.css",
       "js/build.js"
     ]
