@@ -5,7 +5,7 @@
   "icon": "img/icon.png",
   "tags": [
     "type:component",
-    "category:general"
+    "category:media"
   ],
   "provider_only": false,
   "html_tag": "div",
