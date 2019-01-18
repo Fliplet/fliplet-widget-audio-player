@@ -1,5 +1,4 @@
 Fliplet().then(() => {
-  console.log(Fliplet.Media.Audio)
   Fliplet.Widget.instance('fliplet-audio-player',
     async (widgetInstanceData) => {
       if (widgetInstanceData.audioType === 'url') {
@@ -16,7 +15,7 @@ Fliplet().then(() => {
                   if (Fliplet.Navigator.isOnline()) {
                     Fliplet.Analytics.trackEvent({
                       category: 'audio',
-                      action: 'play_streaming_online',
+                      action: 'load_stream_online',
                       title: widgetInstanceData.embedlyData.url
                     });
 
@@ -25,10 +24,35 @@ Fliplet().then(() => {
                       return;
                     }
                     audioHolder.html(widgetInstanceData.embedlyData.audioHtml);
+                    // initialize the player.
+                    var player = new playerjs.Player(audioHolder.find('iframe.embedly-embed')[0]);
+                    // Wait for the player to be ready.
+                    player.on(playerjs.EVENTS.READY, () => {
+                      if (player.supports('event', playerjs.EVENTS.PLAY)) {
+                        player.on(playerjs.EVENTS.PLAY, () => {
+                          Fliplet.Analytics.trackEvent({
+                            category: 'audio',
+                            action: 'play_stream',
+                            title: widgetInstanceData.embedlyData.url
+                          });
+                        });
+                      };
+
+                      player.on(playerjs.EVENTS.PLAY, () => console.log('play'));
+                      if (player.supports('event', playerjs.EVENTS.PAUSE)) {
+                        player.on(playerjs.EVENTS.PAUSE, () => {
+                          Fliplet.Analytics.trackEvent({
+                            category: 'audio',
+                            action: 'pause_stream',
+                            title: widgetInstanceData.embedlyData.url
+                          });
+                        });
+                      };
+                    });
                   } else {
                     Fliplet.Analytics.trackEvent({
                       category: 'audio',
-                      action: 'play_streaming_offline',
+                      action: 'load_stream_offline',
                       title: widgetInstanceData.embedlyData.url
                     });
 
@@ -49,3 +73,4 @@ Fliplet().then(() => {
       }
     });
 });
+
