@@ -1,3 +1,23 @@
+const trackFilePickerAudioPlayerEvents = (playerElement) => {
+  const playButton = playerElement.find('.play-pause-btn');
+  const audioUrl = Fliplet.Media.authenticate(playerElement.data('audio-url'));
+  playButton.on('click', () => {
+    if (playerElement.hasClass('playing')) {
+      trackAnalyticsEvent('pause_stream', audioUrl);
+    } else {
+      trackAnalyticsEvent('play_stream', audioUrl);
+    }
+  })
+}
+
+const trackAnalyticsEvent = (action, label) => {
+  Fliplet.Analytics.trackEvent({
+    category: 'audio',
+    action,
+    label
+  });
+}
+
 Fliplet().then(() => {
   Fliplet.Widget.instance('fliplet-audio-player',
     async (widgetInstanceData) => {
@@ -5,6 +25,7 @@ Fliplet().then(() => {
         if (widgetInstanceData.embedlyData) {
           if (!widgetInstanceData.embedlyData.thumbnailBase64) {
             Fliplet.Media.Audio.Player.init();
+            trackFilePickerAudioPlayerEvents($(`[data-fliplet-audio-player-id=${widgetInstanceData.id}] .audio`));
           }
           else {
             if (widgetInstanceData.embedlyData.thumbnailBase64) {
@@ -13,11 +34,7 @@ Fliplet().then(() => {
               startButton
                 .on('click', () => {
                   if (Fliplet.Navigator.isOnline()) {
-                    Fliplet.Analytics.trackEvent({
-                      category: 'audio',
-                      action: 'load_stream_online',
-                      title: widgetInstanceData.embedlyData.url
-                    });
+                    trackAnalyticsEvent('load_stream_online', widgetInstanceData.embedlyData.url);
 
                     if (widgetInstanceData.embedlyData.type === 'link') {
                       Fliplet.Navigate.url(widgetInstanceData.embedlyData.url);
@@ -30,36 +47,23 @@ Fliplet().then(() => {
                     player.on(playerjs.EVENTS.READY, () => {
                       if (player.supports('event', playerjs.EVENTS.PLAY)) {
                         player.on(playerjs.EVENTS.PLAY, () => {
-                          Fliplet.Analytics.trackEvent({
-                            category: 'audio',
-                            action: 'play_stream',
-                            title: widgetInstanceData.embedlyData.url
-                          });
+                          trackAnalyticsEvent('play_stream', widgetInstanceData.embedlyData.url);
                         });
                       };
 
-                      player.on(playerjs.EVENTS.PLAY, () => console.log('play'));
                       if (player.supports('event', playerjs.EVENTS.PAUSE)) {
                         player.on(playerjs.EVENTS.PAUSE, () => {
-                          Fliplet.Analytics.trackEvent({
-                            category: 'audio',
-                            action: 'pause_stream',
-                            title: widgetInstanceData.embedlyData.url
-                          });
+                          trackAnalyticsEvent('pause_stream', widgetInstanceData.embedlyData.url);
                         });
                       };
                     });
                   } else {
-                    Fliplet.Analytics.trackEvent({
-                      category: 'audio',
-                      action: 'load_stream_offline',
-                      title: widgetInstanceData.embedlyData.url
-                    });
+                    trackAnalyticsEvent('load_stream_offline', widgetInstanceData.embedlyData.url);
 
                     Fliplet.Navigate.popup({
                       popupTitle: 'Internet Unavailable',
                       popupMessage: `This audio requires Internet to play. 
-                  Please try again when Internet is available.`
+                      Please try again when Internet is available.`
                     });
                   }
                 });
@@ -69,8 +73,8 @@ Fliplet().then(() => {
       } else if (widgetInstanceData.audioType === 'file-picker') {
         if (widgetInstanceData.media && widgetInstanceData.media.url) {
           Fliplet.Media.Audio.Player.init();
+          trackFilePickerAudioPlayerEvents($(`[data-fliplet-audio-player-id=${widgetInstanceData.id}] .audio`));
         }
       }
     });
 });
-

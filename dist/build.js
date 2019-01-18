@@ -101,6 +101,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__);
 
 
+
+var trackFilePickerAudioPlayerEvents = function trackFilePickerAudioPlayerEvents(playerElement) {
+  var playButton = playerElement.find('.play-pause-btn');
+  var audioUrl = Fliplet.Media.authenticate(playerElement.data('audio-url'));
+  playButton.on('click', function () {
+    if (playerElement.hasClass('playing')) {
+      trackAnalyticsEvent('pause_stream', audioUrl);
+    } else {
+      trackAnalyticsEvent('play_stream', audioUrl);
+    }
+  });
+};
+
+var trackAnalyticsEvent = function trackAnalyticsEvent(action, label) {
+  Fliplet.Analytics.trackEvent({
+    category: 'audio',
+    action: action,
+    label: label
+  });
+};
+
 Fliplet().then(function () {
   Fliplet.Widget.instance('fliplet-audio-player',
   /*#__PURE__*/
@@ -117,17 +138,14 @@ Fliplet().then(function () {
                 if (widgetInstanceData.embedlyData) {
                   if (!widgetInstanceData.embedlyData.thumbnailBase64) {
                     Fliplet.Media.Audio.Player.init();
+                    trackFilePickerAudioPlayerEvents($("[data-fliplet-audio-player-id=".concat(widgetInstanceData.id, "] .audio")));
                   } else {
                     if (widgetInstanceData.embedlyData.thumbnailBase64) {
                       audioHolder = $("[data-fliplet-audio-player-id=".concat(widgetInstanceData.id, "] .audio-holder"));
                       startButton = $("[data-fliplet-audio-player-id=".concat(widgetInstanceData.id, "] .fl-audio-thumb-holder, [data-fliplet-audio-player-id=").concat(widgetInstanceData.id, "] .audio-placeholder"));
                       startButton.on('click', function () {
                         if (Fliplet.Navigator.isOnline()) {
-                          Fliplet.Analytics.trackEvent({
-                            category: 'audio',
-                            action: 'load_stream_online',
-                            title: widgetInstanceData.embedlyData.url
-                          });
+                          trackAnalyticsEvent('load_stream_online', widgetInstanceData.embedlyData.url);
 
                           if (widgetInstanceData.embedlyData.type === 'link') {
                             Fliplet.Navigate.url(widgetInstanceData.embedlyData.url);
@@ -141,40 +159,25 @@ Fliplet().then(function () {
                           player.on(playerjs.EVENTS.READY, function () {
                             if (player.supports('event', playerjs.EVENTS.PLAY)) {
                               player.on(playerjs.EVENTS.PLAY, function () {
-                                Fliplet.Analytics.trackEvent({
-                                  category: 'audio',
-                                  action: 'play_stream',
-                                  title: widgetInstanceData.embedlyData.url
-                                });
+                                trackAnalyticsEvent('play_stream', widgetInstanceData.embedlyData.url);
                               });
                             }
 
                             ;
-                            player.on(playerjs.EVENTS.PLAY, function () {
-                              return console.log('play');
-                            });
 
                             if (player.supports('event', playerjs.EVENTS.PAUSE)) {
                               player.on(playerjs.EVENTS.PAUSE, function () {
-                                Fliplet.Analytics.trackEvent({
-                                  category: 'audio',
-                                  action: 'pause_stream',
-                                  title: widgetInstanceData.embedlyData.url
-                                });
+                                trackAnalyticsEvent('pause_stream', widgetInstanceData.embedlyData.url);
                               });
                             }
 
                             ;
                           });
                         } else {
-                          Fliplet.Analytics.trackEvent({
-                            category: 'audio',
-                            action: 'load_stream_offline',
-                            title: widgetInstanceData.embedlyData.url
-                          });
+                          trackAnalyticsEvent('load_stream_offline', widgetInstanceData.embedlyData.url);
                           Fliplet.Navigate.popup({
                             popupTitle: 'Internet Unavailable',
-                            popupMessage: "This audio requires Internet to play. \n                  Please try again when Internet is available."
+                            popupMessage: "This audio requires Internet to play. \n                      Please try again when Internet is available."
                           });
                         }
                       });
@@ -184,6 +187,7 @@ Fliplet().then(function () {
               } else if (widgetInstanceData.audioType === 'file-picker') {
                 if (widgetInstanceData.media && widgetInstanceData.media.url) {
                   Fliplet.Media.Audio.Player.init();
+                  trackFilePickerAudioPlayerEvents($("[data-fliplet-audio-player-id=".concat(widgetInstanceData.id, "] .audio")));
                 }
               }
 
