@@ -79,7 +79,7 @@ Fliplet().then(() => {
 
   const isApprovedFile = (fileName) => {
     const extension = fileName.split('.').pop();
-    return _.includes(APPROVED_EXTENSIONS, extension);
+    return Fliplet.Utils.includes(APPROVED_EXTENSIONS, extension);
   }
 
   const save = async (notifyComplete) => {
@@ -94,7 +94,7 @@ Fliplet().then(() => {
       if (media.toRemove) {
         data.media = {};
       } else {
-        data.media = _.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
+        data.media = Fliplet.Utils.isEmpty(media.selectedFiles) ? media : media.selectedFiles;
       }
 
       data.media.path = null;
@@ -187,7 +187,7 @@ Fliplet().then(() => {
     return $.getJSON(`https://api.embedly.com/1/oembed?${$.param(params)}`);
   };
 
-  const audioInputHandler = _.throttle(function handler() {
+  const audioInputHandler = Fliplet.Utils.throttle(function handler() {
     const url = this.value;
 
     removeFinalStates();
